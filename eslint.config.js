@@ -39,6 +39,11 @@ module.exports = tseslint.config(
     languageOptions: { globals: { ...globals.browser } },
   },
   {
+    // Test helpers return loosely typed JSON bodies; assertions check their content.
+    files: ['**/test/**/*.ts', '**/*.test.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
+  {
     files: ['**/scripts/**', '**/*.config.{js,ts,mjs}', 'eslint.config.js'],
     rules: { 'no-console': 'off', '@typescript-eslint/no-require-imports': 'off' },
   },
