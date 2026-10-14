@@ -57,14 +57,16 @@ Requester identity from the token only; input validated before the handler; no f
 
 ## Edge cases
 
-| Case                               | Behaviour                                                                                             |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Double click / lost response       | same Idempotency-Key → original request (200); the web store keeps the key only after a network error |
-| Same key, different dates          | 409 `IDEMPOTENCY_KEY_REUSED`                                                                          |
-| 10 overlapping submissions at once | per-user lock serialises them: one 201, nine 409                                                      |
-| Overlap with a rejected request    | allowed                                                                                               |
-| `2026-02-30`                       | 422 field error on `startDate`                                                                        |
-| Start = today                      | allowed                                                                                               |
+| Case                                            | Behaviour                                                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Double click / lost response                    | same Idempotency-Key → original request (200); the web store keeps the key only after a network error |
+| Same key, different dates                       | 409 `IDEMPOTENCY_KEY_REUSED`                                                                          |
+| 10 overlapping submissions at once              | per-user lock serialises them: one 201, nine 409                                                      |
+| Overlap with a rejected request                 | allowed                                                                                               |
+| `2026-02-30`                                    | 422 field error on `startDate`                                                                        |
+| Start = today                                   | allowed                                                                                               |
+| 2 Nov → 3 Nov                                   | one day off (201)                                                                                     |
+| Next vacation starts on the previous return day | allowed — no shared day off                                                                           |
 
 ## Acceptance criteria → tests
 
