@@ -2,7 +2,7 @@ import type { Clock } from '../../../../shared/time/clock';
 import type { Principal } from '../../../../shared/security/principal';
 import type { UnitOfWork } from '../../../../shared/cqrs/unit-of-work';
 import { ForbiddenError } from '../../../../shared/errors/application-errors';
-import type { UserRepository } from '../../../users/application/user-repository';
+import type { UserRepository } from '../../../users/repositories/user.repository';
 import type { Decision } from '../../domain/vacation-request';
 import {
   RequestNotPendingError,

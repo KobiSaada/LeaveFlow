@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import type { PasswordHasher } from '../application/password-hasher';
+import type { PasswordHasher } from './password-hasher';
 
 export const BCRYPT_COST = 10;
 

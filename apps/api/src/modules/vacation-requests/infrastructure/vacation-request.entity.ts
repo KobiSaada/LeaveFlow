@@ -8,7 +8,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../../users/infrastructure/user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 @Entity({ name: 'vacation_requests' })
 export class VacationRequestEntity {

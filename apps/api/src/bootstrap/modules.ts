@@ -1,7 +1,7 @@
 import { createAuthModule } from '../modules/auth/auth.module';
-import { registerNotificationSubscribers } from '../modules/notifications/notification.subscriber';
+import { createNotificationsModule } from '../modules/notifications/notifications.module';
 import { createUsersModule } from '../modules/users/users.module';
-import { TypeOrmUserRepository } from '../modules/users/infrastructure/typeorm-user-repository';
+import { TypeOrmUserRepository } from '../modules/users/repositories/typeorm-user.repository';
 import { createVacationRequestsModule } from '../modules/vacation-requests/vacation-requests.module';
 import type { AppServices, CoreContainer } from './container';
 
@@ -11,7 +11,7 @@ import type { AppServices, CoreContainer } from './container';
  */
 export function createModules(core: CoreContainer): AppServices {
   const users = new TypeOrmUserRepository(core.dataSource);
-  registerNotificationSubscribers(core.eventBus);
+  createNotificationsModule(core);
   return {
     auth: createAuthModule(core, users),
     users: createUsersModule(users),

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
 import { UnauthenticatedError } from '../../../shared/errors/application-errors';
-import { JwtTokenService } from './jwt-token-service';
+import { JwtTokenService } from './jwt-token.service';
 
 const settings = {
   secret: 's'.repeat(32),

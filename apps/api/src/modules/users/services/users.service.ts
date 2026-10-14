@@ -1,5 +1,5 @@
 import type { PublicUser, UserRole } from '@leaveflow/contracts';
-import type { UserRepository } from './user-repository';
+import type { UserRepository } from '../repositories/user.repository';
 
 export const USERS_LIST_LIMIT = 500;
 

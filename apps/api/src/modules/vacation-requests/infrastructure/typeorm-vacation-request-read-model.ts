@@ -9,7 +9,7 @@ import {
 } from '@leaveflow/contracts';
 import type { DataSource, SelectQueryBuilder } from 'typeorm';
 import { DomainEventEntity } from '../../../shared/database/domain-event.entity';
-import { UserEntity } from '../../users/infrastructure/user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 import type {
   VacationRequestListFilter,
   VacationRequestReadModel,

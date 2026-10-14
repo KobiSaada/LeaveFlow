@@ -1,5 +1,5 @@
 import type { CoreContainer } from '../../bootstrap/container';
-import type { UserRepository } from '../users/application/user-repository';
+import type { UserRepository } from '../users/repositories/user.repository';
 import {
   ApproveVacationRequestCommand,
   ApproveVacationRequestHandler,

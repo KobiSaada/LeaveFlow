@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { types as pgTypes } from 'pg';
 import { DataSource } from 'typeorm';
 import { InitialSchema1760432400000 } from '../../migrations/1760432400000-InitialSchema';
-import { UserEntity } from '../../modules/users/infrastructure/user.entity';
+import { UserEntity } from '../../modules/users/entities/user.entity';
 import { VacationRequestEntity } from '../../modules/vacation-requests/infrastructure/vacation-request.entity';
 import { DomainEventEntity } from './domain-event.entity';
 

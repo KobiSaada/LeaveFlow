@@ -15,7 +15,7 @@ import { getContainer } from '../src/bootstrap/container';
 import type { Principal } from '../src/shared/security/principal';
 import { closeDataSource } from '../src/shared/database/data-source';
 import { setRootLogger } from '../src/shared/logging/logger';
-import { UserEntity } from '../src/modules/users/infrastructure/user.entity';
+import { UserEntity } from '../src/modules/users/entities/user.entity';
 import { VacationRequestEntity } from '../src/modules/vacation-requests/infrastructure/vacation-request.entity';
 import { ApproveVacationRequestCommand } from '../src/modules/vacation-requests/application/commands/approve-vacation-request.command';
 import { CreateVacationRequestCommand } from '../src/modules/vacation-requests/application/commands/create-vacation-request.command';

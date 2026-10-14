@@ -1,10 +1,10 @@
-import type { EventBus } from '../../shared/cqrs/event-bus';
-import { logger } from '../../shared/logging/logger';
+import type { EventBus } from '../../../shared/cqrs/event-bus';
+import { logger } from '../../../shared/logging/logger';
 import type {
   VacationRequestApproved,
   VacationRequestCreated,
   VacationRequestRejected,
-} from '../vacation-requests/domain/vacation-request.events';
+} from '../../vacation-requests/domain/vacation-request.events';
 
 /**
  * Stand-in for email/chat notifications. It shows the decoupling the events buy: the commands do

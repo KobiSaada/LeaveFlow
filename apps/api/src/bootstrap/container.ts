@@ -1,7 +1,7 @@
 import type { DataSource } from 'typeorm';
-import type { AuthService } from '../modules/auth/application/auth.service';
-import { JwtTokenService } from '../modules/auth/infrastructure/jwt-token-service';
-import type { UsersService } from '../modules/users/application/users.service';
+import type { AuthService } from '../modules/auth/services/auth.service';
+import { JwtTokenService } from '../modules/auth/services/jwt-token.service';
+import type { UsersService } from '../modules/users/services/users.service';
 import type { VacationRequestQueries } from '../modules/vacation-requests/application/vacation-request-queries';
 import { CommandBus, type Middleware } from '../shared/cqrs/command-bus';
 import type { Clock } from '../shared/time/clock';

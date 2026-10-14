@@ -1,7 +1,7 @@
 import type { PublicUser, UserRole } from '@leaveflow/contracts';
 import type { DataSource } from 'typeorm';
-import type { UserCredentials, UserRepository } from '../application/user-repository';
-import { UserEntity } from './user.entity';
+import type { UserCredentials, UserRepository } from './user.repository';
+import { UserEntity } from '../entities/user.entity';
 
 const toPublicUser = (row: UserEntity): PublicUser => ({
   id: row.id,

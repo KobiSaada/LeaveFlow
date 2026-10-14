@@ -1,7 +1,7 @@
 import type { LoginResponse, PublicUser } from '@leaveflow/contracts';
 import type { TokenIssuer } from '../../../shared/security/principal';
 import { ApplicationError, UnauthenticatedError } from '../../../shared/errors/application-errors';
-import type { UserRepository } from '../../users/application/user-repository';
+import type { UserRepository } from '../../users/repositories/user.repository';
 import type { PasswordHasher } from './password-hasher';
 
 export class InvalidCredentialsError extends ApplicationError {
