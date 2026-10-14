@@ -1,0 +1,27 @@
+# Local PostgreSQL for LeaveFlow. The API and web run natively (see README):
+# CEF's dev server binds to localhost only, so it cannot be reached from outside a container.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: leaveflow-postgres
+    environment:
+      POSTGRES_USER: leaveflow
+      POSTGRES_PASSWORD: leaveflow
+      POSTGRES_DB: leaveflow
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5544}:5432'
+    volumes:
+      - leaveflow-pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U leaveflow -d leaveflow && psql -U leaveflow -lqt | cut -d"|" -f1 | grep -qw leaveflow_test',
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  leaveflow-pgdata:
