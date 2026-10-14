@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CalendarDays, History, ListChecks, Plus } from 'lucide-vue-next';
+import PageHeader from '@/shared/components/ui/PageHeader.vue';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
 import DecisionInfo from '@/features/vacation-requests/components/DecisionInfo.vue';
@@ -21,7 +23,7 @@ onMounted(() => store.load());
 const openHistory = ref<string | null>(null);
 
 const columns: Column[] = [
-  { key: 'dates', label: 'Dates' },
+  { key: 'dates', label: 'Dates', class: 'whitespace-nowrap' },
   { key: 'reason', label: 'Reason' },
   { key: 'status', label: 'Status' },
   { key: 'decision', label: 'Decision' },
@@ -31,13 +33,22 @@ const columns: Column[] = [
 
 <template>
   <section>
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 class="text-2xl font-semibold">My requests</h1>
-        <p class="text-sm text-slate-600">Track the status of your vacation requests.</p>
-      </div>
-      <RouterLink to="/requests/new"><BaseButton>New request</BaseButton></RouterLink>
-    </div>
+    <PageHeader
+      :icon="ListChecks"
+      title="My requests"
+      description="Track the status of your vacation requests."
+    >
+      <template v-if="pageInfo" #meta>
+        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{{
+          pageInfo.totalItems
+        }}</span>
+      </template>
+      <template #actions>
+        <RouterLink to="/requests/new"
+          ><BaseButton :icon="Plus">New request</BaseButton></RouterLink
+        >
+      </template>
+    </PageHeader>
 
     <LoadingState v-if="loading && !pageInfo" />
     <ErrorState v-else-if="error" :message="describeError(error)" @retry="store.load()" />
@@ -46,7 +57,7 @@ const columns: Column[] = [
       title="No vacation requests yet."
       description="Submit your first request to see it here."
     >
-      <RouterLink to="/requests/new"><BaseButton>New request</BaseButton></RouterLink>
+      <RouterLink to="/requests/new"><BaseButton :icon="Plus">New request</BaseButton></RouterLink>
     </EmptyState>
     <template v-else>
       <DataTable
@@ -56,7 +67,10 @@ const columns: Column[] = [
         :class="{ 'opacity-60': loading }"
       >
         <template #cell-dates="{ row }">
-          <span class="font-medium">{{ formatRange(row.startDate, row.endDate) }}</span>
+          <span class="inline-flex items-center gap-1.5 font-medium text-slate-900">
+            <CalendarDays class="hidden size-4 text-slate-400 md:inline" aria-hidden="true" />
+            {{ formatRange(row.startDate, row.endDate) }}
+          </span>
           <span class="block text-xs text-slate-500"
             >{{ dayCount(row.startDate, row.endDate) }} days</span
           >
@@ -72,11 +86,13 @@ const columns: Column[] = [
           <span class="text-slate-600">{{ formatTimestamp(row.createdAt) }}</span>
           <button
             type="button"
-            class="block text-xs text-indigo-700 hover:underline"
+            class="mt-1 flex items-center gap-1 text-xs font-medium text-indigo-700 hover:underline"
             :aria-expanded="openHistory === row.id"
             @click="openHistory = openHistory === row.id ? null : row.id"
           >
-            {{ openHistory === row.id ? 'Hide history' : 'History' }}
+            <History class="size-3.5" aria-hidden="true" />{{
+              openHistory === row.id ? 'Hide history' : 'History'
+            }}
           </button>
           <RequestHistory v-if="openHistory === row.id" :request-id="row.id" />
         </template>

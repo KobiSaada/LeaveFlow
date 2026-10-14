@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Check, FilterX, History, LayoutDashboard, PartyPopper, SearchX, X } from 'lucide-vue-next';
+import PageHeader from '@/shared/components/ui/PageHeader.vue';
+import UserAvatar from '@/shared/components/ui/UserAvatar.vue';
 import {
   VACATION_REQUEST_STATUSES,
   type VacationRequestDto,
@@ -85,7 +88,7 @@ async function decide(comment: string | null): Promise<void> {
 
 const columns: Column[] = [
   { key: 'employee', label: 'Employee' },
-  { key: 'dates', label: 'Dates' },
+  { key: 'dates', label: 'Dates', class: 'whitespace-nowrap' },
   { key: 'reason', label: 'Reason' },
   { key: 'status', label: 'Status' },
   { key: 'decision', label: 'Decision' },
@@ -95,12 +98,21 @@ const columns: Column[] = [
 
 <template>
   <section>
-    <div class="mb-6">
-      <h1 class="text-2xl font-semibold">Requests dashboard</h1>
-      <p class="text-sm text-slate-600">Review, approve or reject vacation requests.</p>
-    </div>
+    <PageHeader
+      :icon="LayoutDashboard"
+      title="Requests dashboard"
+      description="Review, approve or reject vacation requests."
+    >
+      <template v-if="pageInfo" #meta>
+        <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+          {{ pageInfo.totalItems }} {{ status === 'ALL' ? 'total' : status.toLowerCase() }}
+        </span>
+      </template>
+    </PageHeader>
 
-    <div class="mb-4 grid gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-3">
+    <div
+      class="mb-4 grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1fr_1fr_auto]"
+    >
       <BaseSelect
         label="Status"
         :model-value="status"
@@ -114,7 +126,7 @@ const columns: Column[] = [
         @update:model-value="setQuery({ userId: $event || undefined, page: undefined })"
       />
       <div class="flex items-end">
-        <BaseButton variant="ghost" @click="router.replace({ query: {} })"
+        <BaseButton variant="ghost" :icon="FilterX" @click="router.replace({ query: {} })"
           >Clear filters</BaseButton
         >
       </div>
@@ -122,9 +134,20 @@ const columns: Column[] = [
 
     <LoadingState v-if="loading && !pageInfo" />
     <ErrorState v-else-if="error" :message="describeError(error)" @retry="store.reload()" />
-    <EmptyState v-else-if="items.length === 0" title="No requests match these filters.">
-      <BaseButton variant="secondary" @click="router.replace({ query: {} })"
-        >Clear filters</BaseButton
+    <EmptyState
+      v-else-if="items.length === 0"
+      :icon="status === 'PENDING' ? PartyPopper : SearchX"
+      :title="
+        status === 'PENDING' && !userId
+          ? 'All caught up — nothing waiting for a decision.'
+          : 'No requests match these filters.'
+      "
+    >
+      <BaseButton
+        variant="secondary"
+        :icon="FilterX"
+        @click="router.replace({ query: { status: 'ALL' } })"
+        >Show all requests</BaseButton
       >
     </EmptyState>
     <template v-else>
@@ -135,13 +158,20 @@ const columns: Column[] = [
         :class="{ 'opacity-60': loading }"
       >
         <template #cell-employee="{ row }">
-          <span class="font-medium">{{ row.userName }}</span>
-          <span class="block text-xs text-slate-500"
-            >Submitted {{ formatTimestamp(row.createdAt) }}</span
-          >
+          <span class="flex items-center gap-3 text-left">
+            <UserAvatar :name="row.userName" size="sm" />
+            <span>
+              <span class="block font-medium text-slate-900">{{ row.userName }}</span>
+              <span class="block text-xs whitespace-nowrap text-slate-500"
+                >Submitted {{ formatTimestamp(row.createdAt) }}</span
+              >
+            </span>
+          </span>
         </template>
         <template #cell-dates="{ row }">
-          {{ formatRange(row.startDate, row.endDate) }}
+          <span class="font-medium text-slate-900">{{
+            formatRange(row.startDate, row.endDate)
+          }}</span>
           <span class="block text-xs text-slate-500"
             >{{ dayCount(row.startDate, row.endDate) }} days</span
           >
@@ -156,11 +186,13 @@ const columns: Column[] = [
           <DecisionInfo :request="row" />
           <button
             type="button"
-            class="mt-1 block text-xs text-indigo-700 hover:underline"
+            class="mt-1 flex items-center gap-1 text-xs font-medium text-indigo-700 hover:underline"
             :aria-expanded="openHistory === row.id"
             @click="openHistory = openHistory === row.id ? null : row.id"
           >
-            {{ openHistory === row.id ? 'Hide history' : 'History' }}
+            <History class="size-3.5" aria-hidden="true" />{{
+              openHistory === row.id ? 'Hide history' : 'History'
+            }}
           </button>
           <RequestHistory v-if="openHistory === row.id" :request-id="row.id" />
         </template>
@@ -168,17 +200,22 @@ const columns: Column[] = [
           <div v-if="row.status === 'PENDING'" class="flex justify-end gap-2">
             <BaseButton
               size="sm"
+              variant="success"
+              :icon="Check"
               :disabled="deciding"
               @click="dialog = { mode: 'approve', request: row }"
-              >Approve</BaseButton
             >
+              Approve
+            </BaseButton>
             <BaseButton
               size="sm"
               variant="secondary"
+              :icon="X"
               :disabled="deciding"
               @click="dialog = { mode: 'reject', request: row }"
-              >Reject</BaseButton
             >
+              Reject
+            </BaseButton>
           </div>
         </template>
       </DataTable>

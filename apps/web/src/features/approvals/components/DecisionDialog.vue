@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { COMMENT_MAX_LENGTH } from '@leaveflow/contracts';
+import { CircleCheck, CircleX } from 'lucide-vue-next';
 import { computed, nextTick, ref, useId, watch } from 'vue';
 import BaseButton from '../../../shared/components/ui/BaseButton.vue';
 import BaseTextarea from '../../../shared/components/ui/BaseTextarea.vue';
@@ -61,7 +62,7 @@ function trapFocus(event: KeyboardEvent): void {
   <Teleport to="body">
     <div
       v-if="open"
-      class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+      class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center"
       @click.self="emit('cancel')"
     >
       <div
@@ -69,14 +70,25 @@ function trapFocus(event: KeyboardEvent): void {
         role="dialog"
         aria-modal="true"
         :aria-labelledby="titleId"
-        class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+        class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
         @keydown.esc="emit('cancel')"
         @keydown.tab="trapFocus"
       >
-        <h2 :id="titleId" class="text-lg font-semibold">
-          {{ isReject ? 'Reject request' : 'Approve request' }}
-        </h2>
-        <p class="mt-1 text-sm text-slate-600">{{ summary }}</p>
+        <div class="flex items-start gap-3">
+          <span
+            class="flex size-10 shrink-0 items-center justify-center rounded-full"
+            :class="isReject ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'"
+            aria-hidden="true"
+          >
+            <component :is="isReject ? CircleX : CircleCheck" class="size-5" />
+          </span>
+          <div>
+            <h2 :id="titleId" class="text-lg font-semibold">
+              {{ isReject ? 'Reject request' : 'Approve request' }}
+            </h2>
+            <p class="mt-0.5 text-sm text-slate-600">{{ summary }}</p>
+          </div>
+        </div>
         <form class="mt-4 space-y-4" @submit.prevent="confirm">
           <BaseTextarea
             ref="textarea"
@@ -95,7 +107,7 @@ function trapFocus(event: KeyboardEvent): void {
             >
             <BaseButton
               type="submit"
-              :variant="isReject ? 'danger' : 'primary'"
+              :variant="isReject ? 'danger' : 'success'"
               :disabled="!canConfirm"
               :loading="busy"
             >

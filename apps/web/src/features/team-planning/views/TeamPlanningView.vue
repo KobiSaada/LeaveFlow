@@ -2,7 +2,9 @@
 import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { CalendarClock, ChevronLeft, ChevronRight, Sun, UsersRound } from 'lucide-vue-next';
 import BaseButton from '@/shared/components/ui/BaseButton.vue';
+import PageHeader from '@/shared/components/ui/PageHeader.vue';
 import EmptyState from '@/shared/components/ui/EmptyState.vue';
 import ErrorState from '@/shared/components/ui/ErrorState.vue';
 import LoadingState from '@/shared/components/ui/LoadingState.vue';
@@ -31,35 +33,69 @@ const goTo = (delta: number) =>
 
 <template>
   <section>
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 class="text-2xl font-semibold">Team planning</h1>
-        <p class="text-sm text-slate-600">Who is away — approved and pending vacations.</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <BaseButton variant="secondary" size="sm" aria-label="Previous month" @click="goTo(-1)"
-          >‹</BaseButton
+    <PageHeader
+      :icon="UsersRound"
+      title="Team planning"
+      description="Who is away — approved and pending vacations."
+    >
+      <template #actions>
+        <div
+          class="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-xs"
         >
-        <p class="min-w-36 text-center font-medium" aria-live="polite">{{ formatMonth(month) }}</p>
-        <BaseButton variant="secondary" size="sm" aria-label="Next month" @click="goTo(1)"
-          >›</BaseButton
+          <button
+            type="button"
+            class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Previous month"
+            @click="goTo(-1)"
+          >
+            <ChevronLeft class="size-5" aria-hidden="true" />
+          </button>
+          <p class="min-w-36 text-center text-sm font-semibold text-slate-800" aria-live="polite">
+            {{ formatMonth(month) }}
+          </p>
+          <button
+            type="button"
+            class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Next month"
+            @click="goTo(1)"
+          >
+            <ChevronRight class="size-5" aria-hidden="true" />
+          </button>
+        </div>
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          :icon="CalendarClock"
+          :disabled="month === today.slice(0, 7)"
+          @click="router.replace({ query: {} })"
         >
-      </div>
-    </div>
+          Today
+        </BaseButton>
+      </template>
+    </PageHeader>
 
     <div class="mb-4 flex flex-wrap gap-4 text-xs text-slate-600" aria-label="Legend">
       <span class="flex items-center gap-1.5"
-        ><span class="h-3 w-6 rounded bg-emerald-500" /> Approved</span
+        ><span class="h-3 w-6 rounded bg-gradient-to-r from-emerald-500 to-emerald-600" />
+        Approved</span
       >
       <span class="flex items-center gap-1.5"
-        ><span class="h-3 w-6 rounded border-2 border-dashed border-amber-500 bg-amber-100" />
+        ><span class="h-3 w-6 rounded border border-dashed border-amber-400 bg-amber-50" />
         Pending</span
+      >
+      <span class="flex items-center gap-1.5"
+        ><span class="size-3 rounded-full bg-indigo-600" /> Today</span
       >
     </div>
 
     <LoadingState v-if="loading && entries.length === 0" />
     <ErrorState v-else-if="error" :message="describeError(error)" @retry="store.load(month)" />
-    <EmptyState v-else-if="rows.length === 0" title="No one is away this month." />
+    <EmptyState
+      v-else-if="rows.length === 0"
+      :icon="Sun"
+      title="No one is away this month."
+      description="Everyone is around — a good time to plan."
+    />
     <TeamTimeline
       v-else-if="bounds"
       :bounds="bounds"

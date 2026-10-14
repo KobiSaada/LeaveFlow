@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { compareIsoDates, type IsoDate, type TeamCalendarEntry } from '@leaveflow/contracts';
+import { CircleCheck, Clock3 } from 'lucide-vue-next';
+import { computed } from 'vue';
+import UserAvatar from '@/shared/components/ui/UserAvatar.vue';
 import { formatRange, isWeekend, weekdayInitial } from '@/shared/utils/dates';
 import type { TeamRow } from '../team-planning.store';
 
@@ -11,6 +14,10 @@ const props = defineProps<{
   loading?: boolean;
 }>();
 
+const columns = computed(() => ({
+  gridTemplateColumns: `repeat(${props.bounds.days.length}, minmax(0, 1fr))`,
+}));
+
 function barStyle(entry: TeamCalendarEntry): Record<string, string> {
   const { from, to, days } = props.bounds;
   const start = compareIsoDates(entry.startDate, from) < 0 ? from : entry.startDate;
@@ -21,61 +28,77 @@ function barStyle(entry: TeamCalendarEntry): Record<string, string> {
 
 <template>
   <div
-    class="overflow-x-auto rounded-xl border border-slate-200 bg-white"
+    class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm"
     :class="{ 'opacity-60': loading }"
   >
-    <div class="min-w-[44rem]">
+    <div class="min-w-[46rem]">
+      <!-- Day header -->
       <div
-        class="grid grid-cols-[10rem_1fr] border-b border-slate-200 bg-slate-50 text-[10px] text-slate-500"
+        class="grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] border-b border-slate-200 bg-slate-50/80 text-[10px] text-slate-500"
       >
-        <div class="px-3 py-2 text-xs font-semibold text-slate-600">Employee</div>
-        <div
-          class="grid"
-          :style="{ gridTemplateColumns: `repeat(${bounds.days.length}, minmax(0, 1fr))` }"
-          aria-hidden="true"
-        >
+        <div class="px-4 py-2 text-xs font-semibold text-slate-600">Employee</div>
+        <div class="grid" :style="columns" aria-hidden="true">
           <div
             v-for="day in bounds.days"
             :key="day"
-            class="py-1 text-center"
-            :class="{
-              'bg-slate-100': isWeekend(day),
-              'font-bold text-indigo-700': day === today,
-            }"
+            class="py-1.5 text-center"
+            :class="{ 'bg-slate-100/70': isWeekend(day) }"
           >
             <div>{{ weekdayInitial(day) }}</div>
-            <div>{{ Number(day.slice(8)) }}</div>
+            <div
+              class="mx-auto mt-0.5 flex size-5 items-center justify-center rounded-full"
+              :class="day === today ? 'bg-indigo-600 font-semibold text-white' : ''"
+            >
+              {{ Number(day.slice(8)) }}
+            </div>
           </div>
         </div>
       </div>
+      <!-- One row per person -->
       <ul>
         <li
           v-for="row in rows"
           :key="row.userId"
-          class="grid grid-cols-[10rem_1fr] border-b border-slate-100 last:border-0"
+          class="grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] border-b border-slate-100 last:border-0"
         >
-          <div class="px-3 py-3 text-sm font-medium">{{ row.userName }}</div>
-          <div
-            class="relative grid items-center py-2"
-            :style="{ gridTemplateColumns: `repeat(${bounds.days.length}, minmax(0, 1fr))` }"
-          >
+          <div class="flex min-w-0 items-center gap-2.5 px-3 py-3 sm:px-4">
+            <UserAvatar :name="row.userName" size="sm" />
+            <span class="truncate text-sm font-medium text-slate-800">{{ row.userName }}</span>
+          </div>
+          <div class="grid min-h-14" :style="columns">
+            <!-- background: weekends and today, behind the bars (same grid row) -->
+            <div
+              v-for="(day, index) in bounds.days"
+              :key="day"
+              class="self-stretch"
+              :class="day === today ? 'bg-indigo-50/70' : isWeekend(day) ? 'bg-slate-100/60' : ''"
+              :style="{ gridColumn: `${index + 1}`, gridRow: '1' }"
+              aria-hidden="true"
+            />
             <div
               v-for="entry in row.entries"
               :key="entry.id"
-              class="mx-px h-6 truncate rounded px-1 text-[11px] leading-6"
+              class="relative z-10 mx-0.5 flex h-7 items-center gap-1 self-center truncate rounded-md px-1.5 text-[11px] font-medium shadow-xs"
               :class="
                 entry.status === 'APPROVED'
-                  ? 'bg-emerald-500 text-white'
-                  : 'border-2 border-dashed border-amber-500 bg-amber-100 leading-5 text-amber-900'
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white'
+                  : 'border border-dashed border-amber-400 bg-amber-50 text-amber-800'
               "
-              :style="barStyle(entry)"
+              :style="{ ...barStyle(entry), gridRow: '1' }"
               :title="`${row.userName}: ${formatRange(entry.startDate, entry.endDate)} (${entry.status.toLowerCase()})`"
             >
               <span class="sr-only"
                 >{{ formatRange(entry.startDate, entry.endDate) }},
                 {{ entry.status === 'APPROVED' ? 'approved' : 'pending' }}</span
               >
-              <span aria-hidden="true">{{ entry.status === 'PENDING' ? 'Pending' : '' }}</span>
+              <component
+                :is="entry.status === 'APPROVED' ? CircleCheck : Clock3"
+                class="size-3 shrink-0"
+                aria-hidden="true"
+              />
+              <span class="truncate" aria-hidden="true">{{
+                formatRange(entry.startDate, entry.endDate)
+              }}</span>
             </div>
           </div>
         </li>

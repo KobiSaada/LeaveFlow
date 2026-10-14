@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CalendarPlus, CalendarRange, Lightbulb, Send, TriangleAlert } from 'lucide-vue-next';
+import PageHeader from '@/shared/components/ui/PageHeader.vue';
 import { compareIsoDates, isValidIsoDate, REASON_MAX_LENGTH } from '@leaveflow/contracts';
 import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -82,42 +84,71 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <section class="max-w-xl">
-    <h1 class="text-2xl font-semibold">New vacation request</h1>
-    <p class="mb-6 text-sm text-slate-600">
-      Check
-      <RouterLink to="/team" class="text-indigo-700 hover:underline">team planning</RouterLink>
-      before picking dates.
-    </p>
+  <section class="mx-auto max-w-2xl">
+    <PageHeader
+      :icon="CalendarPlus"
+      title="New vacation request"
+      description="Pick your dates — we check the rules as you type."
+    />
+
     <form
-      class="space-y-5 rounded-xl border border-slate-200 bg-white p-6"
+      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
       novalidate
       @submit.prevent="submit"
     >
-      <div
-        v-if="serverErrors.form"
-        class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800"
-        role="alert"
-      >
-        {{ serverErrors.form }}
+      <div class="space-y-6 p-6 sm:p-8">
+        <div
+          v-if="serverErrors.form"
+          class="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
+          role="alert"
+        >
+          <TriangleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ serverErrors.form }}
+        </div>
+
+        <div>
+          <DateRangeFields
+            v-model:start="form.startDate"
+            v-model:end="form.endDate"
+            :min="today"
+            :start-error="shown.startDate"
+            :end-error="shown.endDate"
+          />
+          <p
+            v-if="summary"
+            class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700"
+            aria-live="polite"
+          >
+            <CalendarRange class="size-4" aria-hidden="true" />{{ summary }}
+          </p>
+        </div>
+
+        <div>
+          <BaseTextarea
+            v-model="form.reason"
+            label="Reason (optional)"
+            :maxlength="REASON_MAX_LENGTH"
+            :error="serverErrors.reason"
+          />
+        </div>
+
+        <p class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
+          <Lightbulb class="mt-0.5 size-4 shrink-0 text-amber-500" aria-hidden="true" />
+          <span>
+            Check
+            <RouterLink to="/team" class="font-medium text-indigo-700 hover:underline"
+              >team planning</RouterLink
+            >
+            to avoid overlapping with colleagues. The end date must be after the start date.
+          </span>
+        </p>
       </div>
-      <DateRangeFields
-        v-model:start="form.startDate"
-        v-model:end="form.endDate"
-        :min="today"
-        :start-error="shown.startDate"
-        :end-error="shown.endDate"
-      />
-      <p v-if="summary" class="text-sm text-slate-600" aria-live="polite">{{ summary }}</p>
-      <BaseTextarea
-        v-model="form.reason"
-        label="Reason (optional)"
-        :maxlength="REASON_MAX_LENGTH"
-        :error="serverErrors.reason"
-      />
-      <div class="flex justify-end gap-2">
+      <div
+        class="flex justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4 sm:px-8"
+      >
         <RouterLink to="/requests"><BaseButton variant="secondary">Cancel</BaseButton></RouterLink>
-        <BaseButton type="submit" :loading="store.submitting">Submit request</BaseButton>
+        <BaseButton type="submit" :icon="Send" :loading="store.submitting"
+          >Submit request</BaseButton
+        >
       </div>
     </form>
   </section>
