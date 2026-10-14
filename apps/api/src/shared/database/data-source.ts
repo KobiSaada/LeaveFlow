@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { types as pgTypes } from 'pg';
 import { DataSource } from 'typeorm';
 import { InitialSchema1760432400000 } from '../../migrations/1760432400000-InitialSchema';
+import { HalfOpenVacationRanges1760518800000 } from '../../migrations/1760518800000-HalfOpenVacationRanges';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { VacationRequestEntity } from '../../modules/vacation-requests/entities/vacation-request.entity';
 import { DomainEventEntity } from './domain-event.entity';
@@ -17,7 +18,7 @@ export function createDataSource(databaseUrl: string): DataSource {
     type: 'postgres',
     url: databaseUrl,
     entities: [UserEntity, VacationRequestEntity, DomainEventEntity],
-    migrations: [InitialSchema1760432400000],
+    migrations: [InitialSchema1760432400000, HalfOpenVacationRanges1760518800000],
     migrationsTableName: 'typeorm_migrations',
     synchronize: false,
     migrationsRun: false,

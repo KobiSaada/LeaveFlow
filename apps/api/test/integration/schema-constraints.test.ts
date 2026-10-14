@@ -179,11 +179,11 @@ describe('vr_decision_consistency', () => {
 });
 
 describe('vr_no_overlapping_active', () => {
-  it('rejects overlapping active requests for the same user, including a shared boundary day', async () => {
+  it('rejects overlapping active requests for the same user, including a shared last day off', async () => {
     const userId = await insertUserRow(ds);
-    await insertRequest({ userId, start: '2030-04-10', end: '2030-04-12' });
+    await insertRequest({ userId, start: '2030-04-10', end: '2030-04-12' }); // off 10–11, back on 12
     await expectViolation(
-      insertRequest({ userId, start: '2030-04-12', end: '2030-04-14' }),
+      insertRequest({ userId, start: '2030-04-11', end: '2030-04-14' }),
       PG_ERROR.EXCLUSION_VIOLATION,
       'vr_no_overlapping_active',
     );
@@ -194,12 +194,12 @@ describe('vr_no_overlapping_active', () => {
     );
   });
 
-  it('accepts adjacent ranges, overlaps with rejected requests, and other users on the same dates', async () => {
+  it('accepts back-to-back ranges (half-open), overlaps with rejected requests, and other users on the same dates', async () => {
     const userId = await insertUserRow(ds);
     const otherUserId = await insertUserRow(ds);
     await insertRequest({ userId, start: '2030-04-10', end: '2030-04-12' });
     await expect(
-      insertRequest({ userId, start: '2030-04-13', end: '2030-04-14' }),
+      insertRequest({ userId, start: '2030-04-12', end: '2030-04-14' }),
     ).resolves.toBeTypeOf('string');
     await insertRequest({
       userId,
@@ -268,16 +268,29 @@ describe('DATE round-trip', () => {
 });
 
 describe('migrations', () => {
-  it('revert and re-apply cleanly (down → up)', async () => {
-    await ds.undoLastMigration({ transaction: 'each' });
-    const [afterDown] = (await ds.query(
-      `SELECT to_regclass('public.vacation_requests') AS t`,
-    )) as Array<{ t: string | null }>;
-    expect(afterDown?.t).toBeNull();
+  const tableExists = async () =>
+    (
+      (await ds.query(`SELECT to_regclass('public.vacation_requests') AS t`)) as Array<{
+        t: string | null;
+      }>
+    )[0]?.t;
+  const overlapConstraint = async () =>
+    (
+      (await ds.query(
+        `SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'vr_no_overlapping_active'`,
+      )) as Array<{ def: string }>
+    )[0]?.def;
+
+  it('revert and re-apply cleanly (down → up), ending with half-open ranges', async () => {
+    // Reverting to inclusive ranges is refused while back-to-back requests exist (they would
+    // overlap under the old rule), so the round trip runs on an empty table.
+    await ds.query('TRUNCATE domain_events, vacation_requests');
+    await ds.undoLastMigration({ transaction: 'each' }); // HalfOpenVacationRanges
+    expect(await overlapConstraint()).toContain("'[]'");
+    await ds.undoLastMigration({ transaction: 'each' }); // InitialSchema
+    expect(await tableExists()).toBeNull();
     await ds.runMigrations({ transaction: 'each' });
-    const [afterUp] = (await ds.query(
-      `SELECT to_regclass('public.vacation_requests') AS t`,
-    )) as Array<{ t: string | null }>;
-    expect(afterUp?.t).toBe('vacation_requests');
+    expect(await tableExists()).toBe('vacation_requests');
+    expect(await overlapConstraint()).toContain("'[)'");
   });
 });

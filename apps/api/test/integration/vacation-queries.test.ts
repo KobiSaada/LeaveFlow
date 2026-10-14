@@ -211,6 +211,7 @@ describe('query plans (checklist §10)', () => {
     const runner = ds.createQueryRunner();
     try {
       await runner.startTransaction();
+      await runner.query('ANALYZE vacation_requests'); // fresh statistics: deterministic plans
       await runner.query('SET LOCAL enable_seqscan = off'); // tiny test tables would otherwise favour a seq scan
       const plan = (await runner.query(`EXPLAIN ${sql}`)) as Array<{ 'QUERY PLAN': string }>;
       expect(plan.map((p) => p['QUERY PLAN']).join('\n')).toContain(index);

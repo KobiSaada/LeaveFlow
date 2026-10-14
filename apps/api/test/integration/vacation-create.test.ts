@@ -64,6 +64,17 @@ describe('BR-1 end strictly after start (AC-5)', () => {
   });
 });
 
+describe('single day off (SPEC-005 AC-1)', () => {
+  it('accepts 2 Nov → 3 Nov as one day off', async () => {
+    const user = await createUser('REQUESTER');
+    const res = await submit(user, '2026-11-02', '2026-11-03');
+    expect(res).toMatchObject({
+      status: 201,
+      body: { startDate: '2026-11-02', endDate: '2026-11-03' },
+    });
+  });
+});
+
 describe('BR-4 no past start (AC-6)', () => {
   it(`rejects a start before ${TODAY} and accepts ${TODAY} itself`, async () => {
     const user = await createUser('REQUESTER');
@@ -75,16 +86,16 @@ describe('BR-4 no past start (AC-6)', () => {
   });
 });
 
-describe('BR-2 no overlap, inclusive (AC-7)', () => {
-  it('rejects full, partial, containing and shared-boundary overlaps with the conflicting range', async () => {
+describe('BR-2 no overlap, half-open ranges (AC-7, SPEC-005 AC-3)', () => {
+  it('rejects full, partial and containing overlaps with the conflicting range', async () => {
     const user = await createUser('REQUESTER');
     const first = await submit(user, '2026-12-09', '2026-12-13');
     for (const [start, end] of [
       ['2026-12-09', '2026-12-13'],
       ['2026-12-10', '2026-12-11'],
       ['2026-12-01', '2026-12-31'],
-      ['2026-12-13', '2026-12-15'],
-      ['2026-12-05', '2026-12-09'],
+      ['2026-12-12', '2026-12-15'],
+      ['2026-12-05', '2026-12-10'],
     ]) {
       const res = await submit(user, start!, end!);
       expect(res, `${start}..${end}`).toMatchObject({
@@ -97,11 +108,13 @@ describe('BR-2 no overlap, inclusive (AC-7)', () => {
     }
   });
 
-  it('accepts the day after, a range over a rejected request, and other users on the same dates', async () => {
+  it('accepts back-to-back ranges, a range over a rejected request, and other users on the same dates', async () => {
     const user = await createUser('REQUESTER');
     const validator = await createUser('VALIDATOR');
     await submit(user, '2026-12-09', '2026-12-13');
-    expect((await submit(user, '2026-12-14', '2026-12-15')).status).toBe(201);
+    // Back at work on the 13th, next vacation starts on the 13th: no shared day off.
+    expect((await submit(user, '2026-12-13', '2026-12-15')).status).toBe(201);
+    expect((await submit(user, '2026-12-05', '2026-12-09')).status).toBe(201);
 
     const rejected = await submit(user, '2027-01-05', '2027-01-07');
     await call('POST', `/vacation-requests/${rejected.body.id}/reject`, {

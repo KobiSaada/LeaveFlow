@@ -94,7 +94,8 @@ paths:
                     type: string,
                     format: date,
                     example: '2026-11-13',
-                    description: Strictly after startDate,
+                    description: First day back at work (exclusive),
+                    strictly after startDate — 2026-11-02 → 2026-11-03 is one day off,
                   }
                 reason: { type: string, maxLength: 500, nullable: true }
       responses:

@@ -128,7 +128,7 @@ describe('CreateVacationRequestHandler', () => {
     const { create, uow } = setup();
     const first = await create.handle(createCmd('2026-11-09', '2026-11-13'));
     uow.committed = [];
-    await expect(create.handle(createCmd('2026-11-13', '2026-11-15'))).rejects.toMatchObject({
+    await expect(create.handle(createCmd('2026-11-12', '2026-11-15'))).rejects.toMatchObject({
       code: 'VACATION_OVERLAP',
       extensions: {
         conflictingRange: { id: first.id, startDate: '2026-11-09', endDate: '2026-11-13' },

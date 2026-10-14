@@ -128,7 +128,7 @@ export class TypeOrmVacationRequestReadRepository implements VacationRequestRead
         'vr.status AS status',
       ])
       .where('vr.status IN (:...active)', { active: ACTIVE_VACATION_REQUEST_STATUSES })
-      .andWhere(`daterange(vr.start_date, vr.end_date, '[]') && daterange(:from, :to, '[]')`, {
+      .andWhere(`daterange(vr.start_date, vr.end_date, '[)') && daterange(:from, :to, '[]')`, {
         from,
         to,
       })

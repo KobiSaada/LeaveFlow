@@ -60,7 +60,7 @@ export class TypeOrmVacationRequestRepository implements VacationRequestReposito
       .createQueryBuilder('vr')
       .where('vr.user_id = :userId', { userId })
       .andWhere('vr.status IN (:...active)', { active: ACTIVE_VACATION_REQUEST_STATUSES })
-      .andWhere(`daterange(vr.start_date, vr.end_date, '[]') && daterange(:start, :end, '[]')`, {
+      .andWhere(`daterange(vr.start_date, vr.end_date, '[)') && daterange(:start, :end, '[)')`, {
         start: range.start,
         end: range.end,
       })
