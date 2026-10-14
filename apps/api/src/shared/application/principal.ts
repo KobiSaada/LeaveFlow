@@ -11,3 +11,7 @@ export interface TokenVerifier {
   /** Returns the principal for a valid token; throws UnauthenticatedError otherwise. */
   verify(token: string): Principal;
 }
+
+export interface TokenIssuer {
+  issue(principal: Principal): { accessToken: string; expiresIn: number };
+}

@@ -24,3 +24,46 @@ paths:
       responses:
         '200':
           description: Healthy
+  /auth/login:
+    post:
+      summary: Exchange email and password for an access token
+      tags: [Auth]
+      x-handler: modules/auth/http/auth.http#loginHandler
+      x-inputParser: modules/auth/http/auth.http#loginParser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: alice@leaveflow.dev }
+                password: { type: string, example: LeaveFlow!2026 }
+      responses:
+        '200': { description: Access token and public profile }
+        '401':
+          { description: INVALID_CREDENTIALS (same response for unknown email and wrong password) }
+        '422': { description: VALIDATION_FAILED }
+  /auth/me:
+    get:
+      summary: The authenticated user's profile
+      tags: [Auth]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/auth/http/auth.http#meHandler
+      x-inputParser: modules/auth/http/auth.http#meParser
+      responses:
+        '200': { description: Public profile }
+        '401': { description: UNAUTHENTICATED }
+  /users:
+    get:
+      summary: List users (validator dashboard filter)
+      tags: [Users]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/users/http/users.http#listUsersHandler
+      x-inputParser: modules/users/http/users.http#listUsersParser
+      parameters:
+        - { in: query, name: role, schema: { type: string, enum: [REQUESTER, VALIDATOR] } }
+      responses:
+        '200': { description: Users ordered by name (max 500) }
+        '403': { description: FORBIDDEN — validators only }

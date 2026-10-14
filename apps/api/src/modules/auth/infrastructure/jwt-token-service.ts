@@ -1,7 +1,7 @@
 import { USER_ROLES } from '@leaveflow/contracts';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import type { Principal, TokenVerifier } from '../../../shared/application/principal';
+import type { Principal, TokenIssuer, TokenVerifier } from '../../../shared/application/principal';
 import { UnauthenticatedError } from '../../../shared/domain/errors';
 
 export interface JwtSettings {
@@ -18,7 +18,7 @@ const claimsSchema = z.object({
 });
 
 /** HS256 access tokens. Verification pins the algorithm and checks issuer, audience and expiry. */
-export class JwtTokenService implements TokenVerifier {
+export class JwtTokenService implements TokenIssuer, TokenVerifier {
   constructor(private readonly settings: JwtSettings) {}
 
   issue(principal: Principal): { accessToken: string; expiresIn: number } {
