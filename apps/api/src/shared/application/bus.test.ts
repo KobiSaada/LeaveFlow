@@ -20,7 +20,7 @@ describe('CommandBus', () => {
     const calls: string[] = [];
     const mw =
       (name: string): Middleware =>
-      async (_m, _k, next) => {
+      async (_command, next) => {
         calls.push(`${name}:before`);
         const result = await next();
         calls.push(`${name}:after`);

@@ -14,13 +14,6 @@ import { type EndpointRequest, validate } from '../../../shared/http/request';
 import { ApproveVacationRequestCommand } from '../application/commands/approve-vacation-request.command';
 import { CreateVacationRequestCommand } from '../application/commands/create-vacation-request.command';
 import { RejectVacationRequestCommand } from '../application/commands/reject-vacation-request.command';
-import {
-  GetTeamCalendarQuery,
-  GetVacationRequestEventsQuery,
-  GetVacationRequestQuery,
-  ListMyVacationRequestsQuery,
-  ListVacationRequestsQuery,
-} from '../application/queries/vacation-request.queries';
 
 const pathId = (request: EndpointRequest): string =>
   validate(z.object({ id: uuidSchema }), { id: request.pathParam('id') }, 'path').id;
@@ -46,7 +39,7 @@ const createVacationRequest = endpoint({
         idempotencyKey,
       ),
     );
-    const dto = await container.queryBus.dispatch(new GetVacationRequestQuery(principal, id));
+    const dto = await container.services.vacationRequests.getById(principal, id);
     return created ? HttpResponse.created(dto) : HttpResponse.ok(dto);
   },
 });
@@ -55,24 +48,16 @@ const createVacationRequest = endpoint({
 const listMyVacationRequests = endpoint({
   access: ['REQUESTER'],
   parse: (request) => validate(listMyVacationRequestsQuerySchema, request.query(), 'query'),
-  handle: async ({ page, pageSize, status }, { principal, container }) =>
-    HttpResponse.ok(
-      await container.queryBus.dispatch(
-        new ListMyVacationRequestsQuery(principal, page, pageSize, status),
-      ),
-    ),
+  handle: async ({ status, ...page }, { principal, container }) =>
+    HttpResponse.ok(await container.services.vacationRequests.listMine(principal, page, status)),
 });
 
 /** GET /vacation-requests — all requests, filterable by status and user. */
 const listVacationRequests = endpoint({
   access: ['VALIDATOR'],
   parse: (request) => validate(listVacationRequestsQuerySchema, request.query(), 'query'),
-  handle: async ({ page, pageSize, status, userId }, { container }) =>
-    HttpResponse.ok(
-      await container.queryBus.dispatch(
-        new ListVacationRequestsQuery(page, pageSize, status, userId),
-      ),
-    ),
+  handle: async ({ status, userId, ...page }, { container }) =>
+    HttpResponse.ok(await container.services.vacationRequests.listAll(page, { status, userId })),
 });
 
 /** POST /vacation-requests/:id/approve */
@@ -84,9 +69,7 @@ const approveVacationRequest = endpoint({
   }),
   handle: async ({ id, comment }, { principal, container }) => {
     await container.commandBus.dispatch(new ApproveVacationRequestCommand(principal, id, comment));
-    return HttpResponse.ok(
-      await container.queryBus.dispatch(new GetVacationRequestQuery(principal, id)),
-    );
+    return HttpResponse.ok(await container.services.vacationRequests.getById(principal, id));
   },
 });
 
@@ -99,9 +82,7 @@ const rejectVacationRequest = endpoint({
   }),
   handle: async ({ id, comment }, { principal, container }) => {
     await container.commandBus.dispatch(new RejectVacationRequestCommand(principal, id, comment));
-    return HttpResponse.ok(
-      await container.queryBus.dispatch(new GetVacationRequestQuery(principal, id)),
-    );
+    return HttpResponse.ok(await container.services.vacationRequests.getById(principal, id));
   },
 });
 
@@ -110,9 +91,7 @@ const listVacationRequestEvents = endpoint({
   access: ['REQUESTER', 'VALIDATOR'],
   parse: (request) => ({ id: pathId(request) }),
   handle: async ({ id }, { principal, container }) =>
-    HttpResponse.ok({
-      items: await container.queryBus.dispatch(new GetVacationRequestEventsQuery(principal, id)),
-    }),
+    HttpResponse.ok({ items: await container.services.vacationRequests.events(principal, id) }),
 });
 
 /** GET /team-calendar — who is away (approved + pending) in a window of at most 92 days. */
@@ -120,9 +99,7 @@ const getTeamCalendar = endpoint({
   access: ['REQUESTER', 'VALIDATOR'],
   parse: (request) => validate(teamCalendarQuerySchema, request.query(), 'query'),
   handle: async ({ from, to }, { container }) =>
-    HttpResponse.ok({
-      items: await container.queryBus.dispatch(new GetTeamCalendarQuery(from, to)),
-    }),
+    HttpResponse.ok({ items: await container.services.vacationRequests.teamCalendar(from, to) }),
 });
 
 export const createVacationRequestParser = createVacationRequest.parser;

@@ -85,9 +85,9 @@ flowchart LR
     subgraph API["API — CEF dev server locally, AWS Lambda handler in production"]
         Entry["index.ts / app.ts<br/>error boundary · request id · logging"]
         Router["CEF router<br/>root.yaml → HandlerRegistry"]
-        HTTP["endpoint()<br/>x-inputParser: authenticate → authorize → validate<br/>x-handler: dispatch"]
-        CB["CommandBus"] --> Domain["Domain<br/>VacationRequest aggregate · DateRange"]
-        QB["QueryBus"] --> Read["Read model (SQL, joined DTOs)"]
+        HTTP["Controllers — endpoint()<br/>x-inputParser: authenticate → authorize → validate<br/>x-handler: call a service or dispatch a command"]
+        CB["CommandBus → command handlers"] --> Domain["Domain<br/>VacationRequest aggregate · DateRange"]
+        QB["Read services"] --> Read["Read model (SQL, joined DTOs)"]
         UoW["Unit of work<br/>transaction + events → domain_events"]
         EB["EventBus (after commit)"] --> Sub["Notification subscriber (stub)"]
     end
@@ -109,34 +109,47 @@ apps/api/src/
   bootstrap/                env config (validated, fail fast) · composition root (manual DI)
   shared/
     domain/                 ApplicationError hierarchy · AggregateRoot · DomainEvent
-    application/            CommandBus / QueryBus (+ middleware) · EventBus · UnitOfWork · Clock ports
+    application/            CommandBus (+ middleware) · EventBus · UnitOfWork · Clock ports
     http/                   endpoint() · Problem Details mapping · request parsing · request context
     infrastructure/         DataSource · unit of work · PG error translation · pino logger · clocks
   modules/
-    auth/                   LoginQuery, GetMeQuery, JWT, bcrypt
-    users/                  ListUsersQuery
+    auth/                   AuthService (login, me), JWT, bcrypt
+    users/                  UsersService
     vacation-requests/
       domain/               VacationRequest aggregate, DateRange, events, errors   ← no framework imports
-      application/          commands/, queries/, ports/
+      application/          commands/ (write side), vacation-request-queries.ts (read service), ports/
       infrastructure/       TypeORM entity, repository (writes), read model (reads)
-      http/                 endpoints referenced from root.yaml
+      controllers/          endpoints referenced from root.yaml
     notifications/          event subscribers
   migrations/
 packages/contracts/         enums, DTO types, zod schemas, error codes — shared by API and web
 apps/web/src/               api/ · stores/ · router/ · composables/ · components/ · views/
 ```
 
-Dependencies point inward: `domain` ← `application` ← `infrastructure` / `http`.
+Dependencies point inward: `domain` ← `application` ← `infrastructure` / `controllers`.
 
-### Commands, queries, events
+### The same layers in familiar terms
 
-| Kind    | Name                                                                                                                                                                                         | Notes                                                       |
-| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Command | `CreateVacationRequestCommand`                                                                                                                                                               | returns `{ id, created }`; DTO is read back through a query |
-| Command | `ApproveVacationRequestCommand`                                                                                                                                                              | compare-and-set; repeat = no-op                             |
-| Command | `RejectVacationRequestCommand`                                                                                                                                                               | comment required                                            |
-| Query   | `ListMyVacationRequestsQuery`, `ListVacationRequestsQuery`, `GetVacationRequestQuery`, `GetTeamCalendarQuery`, `GetVacationRequestEventsQuery`, `ListUsersQuery`, `LoginQuery`, `GetMeQuery` |                                                             |
-| Event   | `VacationRequestCreated`, `VacationRequestApproved`, `VacationRequestRejected`                                                                                                               | ids and dates only — never free text                        |
+| Familiar term    | Here                                                                                    | Example                                    |
+| ---------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Module           | `modules/<feature>/` + `<feature>.module.ts` (wires the feature, like NestJS providers) | `vacation-requests.module.ts`              |
+| Controller       | `controllers/*.controller.ts` — the functions `root.yaml` routes to                     | `vacation-requests.controller.ts`          |
+| Service (reads)  | `*Service` / `*Queries` classes                                                         | `VacationRequestQueries`, `AuthService`    |
+| Service (writes) | one command handler per use case, dispatched on the `CommandBus`                        | `CreateVacationRequestHandler`             |
+| Repository       | `infrastructure/*-repository.ts` (writes) and `*-read-model.ts` (reads)                 | `TypeOrmVacationRequestRepository`         |
+| Entity / model   | TypeORM entity (persistence) + domain aggregate (rules)                                 | `VacationRequestEntity`, `VacationRequest` |
+
+**Why commands for writes but plain services for reads:** the brief asks for commands and events for state changes (`CreateVacationRequestCommand`, "vacation approved" events), and that is where a bus, a unit of work and events pay off — one transaction, one audited event per change. Reads change nothing, so they are ordinary service methods.
+
+### Commands, read services, events
+
+| Kind         | Name                                                                                                                 | Notes                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Command      | `CreateVacationRequestCommand`                                                                                       | returns `{ id, created }`; the DTO is read back through the read service |
+| Command      | `ApproveVacationRequestCommand`                                                                                      | compare-and-set; repeat = no-op                                          |
+| Command      | `RejectVacationRequestCommand`                                                                                       | comment required                                                         |
+| Read service | `VacationRequestQueries` (`getById`, `listMine`, `listAll`, `teamCalendar`, `events`), `AuthService`, `UsersService` | no bus — reads change nothing                                            |
+| Event        | `VacationRequestCreated`, `VacationRequestApproved`, `VacationRequestRejected`                                       | ids and dates only — never free text                                     |
 
 **Event delivery (outbox-lite):** events are inserted into `domain_events` **in the same transaction** as the state change, then published to in-process subscribers **only after commit**. A rolled-back change leaves no event; a committed change always has one; a failing subscriber is logged and never fails the request. `domain_events` doubles as the audit trail shown in the UI ("History").
 
@@ -185,7 +198,6 @@ Rules are enforced on the server; the UI mirrors them for instant feedback only.
 - **Two submissions racing** (double click, two tabs): submissions of one user are serialised with a transaction-scoped advisory lock, the exclusion constraint is the final guarantee, and the loser receives `409 VACATION_OVERLAP`. Concurrent conflicting inserts on an exclusion constraint otherwise _deadlock_ in PostgreSQL — the integration suite caught exactly that (as `500`s) before the lock was added.
 - **Two validators racing** (approve vs reject): compare-and-set update; exactly one wins and emits one event; the other gets `409 REQUEST_NOT_PENDING` naming who decided ("already rejected by Yossi Ben-David").
 - **Retries:** `POST /vacation-requests` accepts an `Idempotency-Key` (the web app sends one per form session). Same key + same payload → the original request (`200`); same key + different payload → `409 IDEMPOTENCY_KEY_REUSED`. Repeating an existing decision returns `200` without a new event.
-- Transient `40P01`/`40001` errors are retried by the unit of work (max 3 attempts).
 
 ---
 
@@ -259,7 +271,7 @@ Lists return `{ items, pageInfo: { page, pageSize, totalItems, totalPages } }`.
 ## Testing
 
 ```bash
-npm run db:up && npm test      # 195 tests
+npm run db:up && npm test      # 194 tests
 ```
 
 | Suite                | Count | What it proves                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -277,8 +289,8 @@ The UI was also walked end to end in a browser as both roles (including a two-va
 
 The full reasoning, with rejected alternatives, is in the spec: [`docs/specs/SPEC-001-leave-management/epic.md` §11.3](docs/specs/SPEC-001-leave-management/epic.md). Highlights:
 
-- **Modular monolith with CQRS-lite** — commands change state, queries read joined DTOs; no event sourcing, no broker. The brief wants visible command/event architecture, not distributed infrastructure.
-- **Own buses instead of a framework** — a few dozen typed lines each, with middleware; NestJS-style CQRS would have replaced CEF's routing, which is the part being evaluated.
+- **Modular monolith: commands for writes, services for reads** — state changes go through commands, a unit of work and events; reads are plain services over a SQL read model. No event sourcing, no broker, no query bus (KISS — see [SPEC-002](docs/specs/SPEC-002-simplify-architecture/spec.md)).
+- **Own command bus and event bus instead of a framework** — a few dozen typed lines each; NestJS would have replaced CEF's routing, which is the part being evaluated.
 - **Invariants in the database too** — exclusion constraint, `CHECK`s and compare-and-set make the rules hold under concurrency, not just in the happy path.
 - **Task-based endpoints** (`POST …/approve`) map 1:1 to commands and avoid CEF's missing `PATCH`.
 - **Shared contracts package** — one set of enums, DTOs, zod schemas and error codes for API and web.

@@ -12,7 +12,7 @@ All work follows spec-driven development via the `spec-development` skill (`.cla
 - npm workspaces: `apps/api` (CommonJS, CEF), `apps/web` (ESM, Vite), `packages/contracts` (shared types/schemas — change contracts first).
 - Node via `.nvmrc` (24). PostgreSQL via `npm run db:up` on host port 5544.
 - API routes live in `apps/api/src/root.yaml`; after editing run `npm run codegen -w @leaveflow/api` (never the `cef-gen-handlers` bin — it is a no-op via npm in CEF 1.0.19).
-- New state changes = a Command + handler running in the UnitOfWork; reads = a Query on the read model. Endpoints are built with `endpoint()` (auth → role → validation in the input parser).
+- Layering: controller (`modules/*/controllers`, built with `endpoint()`: auth → role → validation in the input parser) → command handler on the `CommandBus` for writes (runs in the UnitOfWork, records events) or a read service (`container.services.*`) for reads → repository / read model. No query bus.
 - TypeORM: explicit column types on every column (esbuild has no decorator metadata); schema only via migrations.
 - Calendar dates are `YYYY-MM-DD` strings end to end; never `new Date('YYYY-MM-DD')`.
 - Gate before committing: `npm run verify` (needs the database up). Conventional commits, one logical change each.

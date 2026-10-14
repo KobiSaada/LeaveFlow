@@ -1,6 +1,9 @@
 import type { DataSource } from 'typeorm';
+import type { AuthService } from '../modules/auth/application/auth.service';
 import { JwtTokenService } from '../modules/auth/infrastructure/jwt-token-service';
-import { CommandBus, type Middleware, QueryBus } from '../shared/application/bus';
+import type { UsersService } from '../modules/users/application/users.service';
+import type { VacationRequestQueries } from '../modules/vacation-requests/application/vacation-request-queries';
+import { CommandBus, type Middleware } from '../shared/application/bus';
 import type { Clock } from '../shared/application/clock';
 import { EventBus } from '../shared/application/event-bus';
 import type { UnitOfWork } from '../shared/application/unit-of-work';
@@ -12,49 +15,58 @@ import { logger } from '../shared/infrastructure/logger';
 import { type AppConfig, loadConfig } from './config';
 import { registerModules } from './modules';
 
-/**
- * Composition root. Dependencies are wired by hand: no DI container, because esbuild-based
- * tooling (tsx, cef-build) emits no decorator metadata for reflection-based injection.
- */
-export interface Container {
+/** Infrastructure shared by every module. */
+export interface CoreContainer {
   config: AppConfig;
   dataSource: DataSource;
   clock: Clock;
   tokens: JwtTokenService;
+  /** Writes: every state change is a command. */
   commandBus: CommandBus;
-  queryBus: QueryBus;
   eventBus: EventBus;
   unitOfWork: UnitOfWork;
+}
+
+/** Reads: plain services, one per module. */
+export interface AppServices {
+  auth: AuthService;
+  users: UsersService;
+  vacationRequests: VacationRequestQueries;
+}
+
+/**
+ * Composition root. Dependencies are wired by hand: no DI framework, because esbuild-based
+ * tooling (tsx, cef-build) emits no decorator metadata for reflection-based injection.
+ */
+export interface Container extends CoreContainer {
+  services: AppServices;
 }
 
 export interface ContainerOverrides {
   clock?: Clock;
 }
 
-/** Logs every command/query with its outcome and duration. */
-const loggingMiddleware: Middleware = async (message, kind, next) => {
+/** Logs every command with its outcome and duration. */
+const loggingMiddleware: Middleware = async (command, next) => {
   const startedAt = performance.now();
+  const durationMs = () => Math.round(performance.now() - startedAt);
   try {
     const result = await next();
     logger().info(
-      {
-        [kind]: message.type,
-        outcome: 'success',
-        durationMs: Math.round(performance.now() - startedAt),
-      },
-      `${kind} handled`,
+      { command: command.type, outcome: 'success', durationMs: durationMs() },
+      'command handled',
     );
     return result;
   } catch (error) {
     const expected = error instanceof ApplicationError;
     logger()[expected ? 'info' : 'error'](
       {
-        [kind]: message.type,
+        command: command.type,
         outcome: 'failure',
         errorCode: expected ? error.code : 'INTERNAL_ERROR',
-        durationMs: Math.round(performance.now() - startedAt),
+        durationMs: durationMs(),
       },
-      `${kind} failed`,
+      'command failed',
     );
     throw error;
   }
@@ -69,18 +81,16 @@ async function buildContainer(overrides: ContainerOverrides): Promise<Container>
       'event subscriber failed',
     );
   });
-  const container: Container = {
+  const core: CoreContainer = {
     config,
     dataSource,
     clock: overrides.clock ?? new SystemClock(config.businessTimeZone),
     tokens: new JwtTokenService(config.jwt),
     commandBus: new CommandBus([loggingMiddleware]),
-    queryBus: new QueryBus([loggingMiddleware]),
     eventBus,
     unitOfWork: new TypeOrmUnitOfWork(dataSource, eventBus),
   };
-  registerModules(container);
-  return container;
+  return { ...core, services: registerModules(core) };
 }
 
 let containerPromise: Promise<Container> | undefined;

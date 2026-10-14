@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { UserCredentials, UserRepository } from '../../users/application/user-repository';
-import { InvalidCredentialsError, LoginHandler, LoginQuery } from './login.query';
+import { AuthService, InvalidCredentialsError } from './auth.service';
 import type { PasswordHasher } from './password-hasher';
 
 const alice: UserCredentials = {
@@ -22,13 +22,13 @@ function setup(user: UserCredentials | null, passwordMatches: boolean) {
     verifyAgainstDummy: vi.fn().mockResolvedValue(undefined),
   };
   const tokens = { issue: vi.fn().mockReturnValue({ accessToken: 'token', expiresIn: 60 }) };
-  return { handler: new LoginHandler(users, hasher, tokens), hasher, tokens };
+  return { service: new AuthService(users, hasher, tokens), hasher, tokens, users };
 }
 
-describe('LoginHandler', () => {
+describe('AuthService.login', () => {
   it('issues a token and returns the public profile without the hash', async () => {
-    const { handler, tokens } = setup(alice, true);
-    const result = await handler.handle(new LoginQuery(alice.email, 'pw'));
+    const { service, tokens } = setup(alice, true);
+    const result = await service.login(alice.email, 'pw');
     expect(result).toEqual({
       accessToken: 'token',
       tokenType: 'Bearer',
@@ -44,16 +44,14 @@ describe('LoginHandler', () => {
   });
 
   it('rejects a wrong password without issuing a token', async () => {
-    const { handler, tokens } = setup(alice, false);
-    await expect(handler.handle(new LoginQuery(alice.email, 'bad'))).rejects.toBeInstanceOf(
-      InvalidCredentialsError,
-    );
+    const { service, tokens } = setup(alice, false);
+    await expect(service.login(alice.email, 'bad')).rejects.toBeInstanceOf(InvalidCredentialsError);
     expect(tokens.issue).not.toHaveBeenCalled();
   });
 
   it('spends a dummy hash comparison for unknown emails and fails identically', async () => {
-    const { handler, hasher } = setup(null, false);
-    await expect(handler.handle(new LoginQuery('ghost@leaveflow.dev', 'x'))).rejects.toBeInstanceOf(
+    const { service, hasher } = setup(null, false);
+    await expect(service.login('ghost@leaveflow.dev', 'x')).rejects.toBeInstanceOf(
       InvalidCredentialsError,
     );
     expect(hasher.verifyAgainstDummy).toHaveBeenCalledWith('x');

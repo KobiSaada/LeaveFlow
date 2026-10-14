@@ -13,7 +13,7 @@ import { UserEntity } from '../../users/infrastructure/user.entity';
 import type {
   VacationRequestListFilter,
   VacationRequestReadModel,
-} from '../application/queries/vacation-request-read-model';
+} from '../application/ports/vacation-request-read-model';
 import { VacationRequestEntity } from './vacation-request.entity';
 
 interface RequestRow {

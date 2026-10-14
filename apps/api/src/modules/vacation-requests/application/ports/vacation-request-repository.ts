@@ -2,14 +2,6 @@ import type { Transaction } from '../../../../shared/application/unit-of-work';
 import type { DateRange } from '../../domain/date-range';
 import type { VacationRequest } from '../../domain/vacation-request';
 
-/**
- * Raised by `insert` when the (user, idempotency key) unique index rejects a row — i.e. a concurrent
- * request with the same key won the race. The transaction is aborted; the caller retries the lookup.
- */
-export class IdempotencyKeyRaceError extends Error {
-  override readonly name = 'IdempotencyKeyRaceError';
-}
-
 export interface VacationRequestRepository {
   /**
    * Serialises writers of one user's schedule for the rest of the transaction. Without it,
@@ -30,8 +22,8 @@ export interface VacationRequestRepository {
     range: DateRange,
   ): Promise<VacationRequest | null>;
   /**
-   * Inserts a new request. Throws VacationOverlapError when the exclusion constraint fires (a
-   * concurrent insert won) and IdempotencyKeyRaceError on a duplicate idempotency key.
+   * Inserts a new request. The database constraints are a safety net behind the handler's checks:
+   * an overlap maps to VacationOverlapError, a duplicate idempotency key to IdempotencyKeyReusedError.
    */
   insert(tx: Transaction, request: VacationRequest): Promise<void>;
   /**

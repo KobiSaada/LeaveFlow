@@ -3,13 +3,10 @@ import type { EntityManager } from 'typeorm';
 import type { Transaction } from '../../../shared/application/unit-of-work';
 import { asConstraintViolation, PG_ERROR } from '../../../shared/infrastructure/database/pg-errors';
 import { entityManagerOf } from '../../../shared/infrastructure/database/typeorm-unit-of-work';
-import {
-  IdempotencyKeyRaceError,
-  type VacationRequestRepository,
-} from '../application/ports/vacation-request-repository';
+import type { VacationRequestRepository } from '../application/ports/vacation-request-repository';
 import { DateRange } from '../domain/date-range';
 import { VacationRequest } from '../domain/vacation-request';
-import { VacationOverlapError } from '../domain/vacation-request.errors';
+import { IdempotencyKeyReusedError, VacationOverlapError } from '../domain/vacation-request.errors';
 import { VacationRequestEntity } from './vacation-request.entity';
 
 function toDomain(row: VacationRequestEntity): VacationRequest {
@@ -99,7 +96,7 @@ export class TypeOrmVacationRequestRepository implements VacationRequestReposito
         violation?.code === PG_ERROR.UNIQUE_VIOLATION &&
         violation.constraint === 'vr_user_idempotency_key'
       ) {
-        throw new IdempotencyKeyRaceError();
+        throw new IdempotencyKeyReusedError();
       }
       throw error;
     }

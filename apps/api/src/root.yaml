@@ -19,8 +19,8 @@ paths:
     get:
       summary: Liveness and database connectivity
       tags: [System]
-      x-handler: modules/health/http/health.http#getHealthHandler
-      x-inputParser: modules/health/http/health.http#getHealthParser
+      x-handler: modules/health/controllers/health.controller#getHealthHandler
+      x-inputParser: modules/health/controllers/health.controller#getHealthParser
       responses:
         '200':
           description: Healthy
@@ -28,8 +28,8 @@ paths:
     post:
       summary: Exchange email and password for an access token
       tags: [Auth]
-      x-handler: modules/auth/http/auth.http#loginHandler
-      x-inputParser: modules/auth/http/auth.http#loginParser
+      x-handler: modules/auth/controllers/auth.controller#loginHandler
+      x-inputParser: modules/auth/controllers/auth.controller#loginParser
       requestBody:
         required: true
         content:
@@ -50,8 +50,8 @@ paths:
       summary: The authenticated user's profile
       tags: [Auth]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/auth/http/auth.http#meHandler
-      x-inputParser: modules/auth/http/auth.http#meParser
+      x-handler: modules/auth/controllers/auth.controller#meHandler
+      x-inputParser: modules/auth/controllers/auth.controller#meParser
       responses:
         '200': { description: Public profile }
         '401': { description: UNAUTHENTICATED }
@@ -60,8 +60,8 @@ paths:
       summary: List users (validator dashboard filter)
       tags: [Users]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/users/http/users.http#listUsersHandler
-      x-inputParser: modules/users/http/users.http#listUsersParser
+      x-handler: modules/users/controllers/users.controller#listUsersHandler
+      x-inputParser: modules/users/controllers/users.controller#listUsersParser
       parameters:
         - { in: query, name: role, schema: { type: string, enum: [REQUESTER, VALIDATOR] } }
       responses:
@@ -72,8 +72,8 @@ paths:
       summary: Submit a vacation request (CreateVacationRequestCommand)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#createVacationRequestHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#createVacationRequestParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#createVacationRequestHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#createVacationRequestParser
       parameters:
         - in: header
           name: Idempotency-Key
@@ -107,8 +107,8 @@ paths:
       summary: List all requests (ListVacationRequestsQuery)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#listVacationRequestsHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#listVacationRequestsParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#listVacationRequestsHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#listVacationRequestsParser
       parameters:
         - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
         - {
@@ -126,8 +126,8 @@ paths:
       summary: The caller's own requests (ListMyVacationRequestsQuery)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#listMyVacationRequestsHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#listMyVacationRequestsParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#listMyVacationRequestsHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#listMyVacationRequestsParser
       parameters:
         - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
         - {
@@ -143,8 +143,8 @@ paths:
       summary: Approve a pending request (ApproveVacationRequestCommand)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#approveVacationRequestHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#approveVacationRequestParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#approveVacationRequestHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#approveVacationRequestParser
       parameters:
         - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
       requestBody:
@@ -163,8 +163,8 @@ paths:
       summary: Reject a pending request with a required comment (RejectVacationRequestCommand)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#rejectVacationRequestHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#rejectVacationRequestParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#rejectVacationRequestHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#rejectVacationRequestParser
       parameters:
         - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
       requestBody:
@@ -186,8 +186,8 @@ paths:
       summary: Audit trail of a request (domain events)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#listVacationRequestEventsHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#listVacationRequestEventsParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#listVacationRequestEventsHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#listVacationRequestEventsParser
       parameters:
         - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
       responses:
@@ -198,8 +198,8 @@ paths:
       summary: Approved and pending vacations of the whole team in a window (no reason or comments)
       tags: [Team planning]
       security: [{ bearerAuth: [] }]
-      x-handler: modules/vacation-requests/http/vacation-requests.http#getTeamCalendarHandler
-      x-inputParser: modules/vacation-requests/http/vacation-requests.http#getTeamCalendarParser
+      x-handler: modules/vacation-requests/controllers/vacation-requests.controller#getTeamCalendarHandler
+      x-inputParser: modules/vacation-requests/controllers/vacation-requests.controller#getTeamCalendarParser
       parameters:
         - { in: query, name: from, required: true, schema: { type: string, format: date } }
         - {

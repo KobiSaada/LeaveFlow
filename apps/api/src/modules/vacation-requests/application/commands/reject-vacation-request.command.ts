@@ -1,4 +1,4 @@
-import { Command, type MessageHandler } from '../../../../shared/application/bus';
+import { Command, type CommandHandler } from '../../../../shared/application/bus';
 import type { Principal } from '../../../../shared/application/principal';
 import type { DecisionResult, VacationRequestDecider } from './decide-vacation-request';
 
@@ -15,7 +15,7 @@ export class RejectVacationRequestCommand extends Command<DecisionResult> {
   }
 }
 
-export class RejectVacationRequestHandler implements MessageHandler<RejectVacationRequestCommand> {
+export class RejectVacationRequestHandler implements CommandHandler<RejectVacationRequestCommand> {
   constructor(private readonly decider: VacationRequestDecider) {}
 
   handle({ actor, requestId, comment }: RejectVacationRequestCommand): Promise<DecisionResult> {

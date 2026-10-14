@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { IsoDate } from '@leaveflow/contracts';
-import { Command, type MessageHandler } from '../../../../shared/application/bus';
+import { Command, type CommandHandler } from '../../../../shared/application/bus';
 import type { Clock } from '../../../../shared/application/clock';
 import type { Principal } from '../../../../shared/application/principal';
 import type { Transaction, UnitOfWork } from '../../../../shared/application/unit-of-work';
@@ -11,10 +11,7 @@ import {
   IdempotencyKeyReusedError,
   VacationOverlapError,
 } from '../../domain/vacation-request.errors';
-import {
-  IdempotencyKeyRaceError,
-  type VacationRequestRepository,
-} from '../ports/vacation-request-repository';
+import type { VacationRequestRepository } from '../ports/vacation-request-repository';
 
 export interface CreateVacationRequestResult {
   id: string;
@@ -36,7 +33,7 @@ export class CreateVacationRequestCommand extends Command<CreateVacationRequestR
   }
 }
 
-export class CreateVacationRequestHandler implements MessageHandler<CreateVacationRequestCommand> {
+export class CreateVacationRequestHandler implements CommandHandler<CreateVacationRequestCommand> {
   constructor(
     private readonly unitOfWork: UnitOfWork,
     private readonly requests: VacationRequestRepository,
@@ -46,21 +43,7 @@ export class CreateVacationRequestHandler implements MessageHandler<CreateVacati
   async handle(command: CreateVacationRequestCommand): Promise<CreateVacationRequestResult> {
     // BR-6 / D-3: only requesters submit (also enforced at the HTTP edge; defence in depth).
     if (command.actor.role !== 'REQUESTER') throw new ForbiddenError();
-    try {
-      return await this.unitOfWork.run((tx) => this.create(tx, command));
-    } catch (error) {
-      // Lost a race against a concurrent call carrying the same Idempotency-Key. Depending on which
-      // index PostgreSQL checks first, the loser sees the key's unique index or the overlap
-      // exclusion constraint (the winner's identical range). Either way the winner has committed:
-      // replay it instead of reporting a conflict to a client that only retried.
-      const keyRace =
-        error instanceof IdempotencyKeyRaceError ||
-        (command.idempotencyKey !== null && error instanceof VacationOverlapError);
-      if (!keyRace) throw error;
-      const replay = await this.unitOfWork.run((tx) => this.replay(tx, command));
-      if (replay) return replay;
-      throw error;
-    }
+    return this.unitOfWork.run((tx) => this.create(tx, command));
   }
 
   private async create(

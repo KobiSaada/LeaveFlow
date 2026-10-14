@@ -5,17 +5,14 @@ import type { DomainEvent } from '../../../../shared/domain/domain-event';
 import { ForbiddenError } from '../../../../shared/domain/errors';
 import { FixedClock } from '../../../../shared/infrastructure/clock';
 import type { UserRepository } from '../../../users/application/user-repository';
-import { DateRange } from '../../domain/date-range';
+import { type DateRange } from '../../domain/date-range';
 import { VacationRequest } from '../../domain/vacation-request';
 import {
   IdempotencyKeyReusedError,
   RequestNotPendingError,
   VacationOverlapError,
 } from '../../domain/vacation-request.errors';
-import {
-  IdempotencyKeyRaceError,
-  type VacationRequestRepository,
-} from '../ports/vacation-request-repository';
+import type { VacationRequestRepository } from '../ports/vacation-request-repository';
 import {
   CreateVacationRequestCommand,
   CreateVacationRequestHandler,
@@ -157,31 +154,6 @@ describe('CreateVacationRequestHandler', () => {
     await expect(create.handle(createCmd('2026-12-01', '2026-12-03', KEY))).rejects.toBeInstanceOf(
       IdempotencyKeyReusedError,
     );
-  });
-
-  it('recovers from losing an idempotency-key race by replaying the winner', async () => {
-    const { create, repo } = setup();
-    const winner = VacationRequest.submit({
-      id: 'aaaaaaaa-0000-4000-8000-000000000001',
-      requesterId: alice.userId,
-      range: DateRange.of('2026-11-09', '2026-11-13'),
-      reason: null,
-      idempotencyKey: KEY,
-      today: '2026-10-14',
-      now: new Date(),
-    });
-    // The winner commits while our insert is in flight: our insert hits the unique index.
-    repo.failInsertWith = new IdempotencyKeyRaceError();
-    const originalInsert = repo.insert.bind(repo);
-    repo.insert = async (tx, request) => {
-      repo.rows.set(winner.id, winner);
-      repo.insert = originalInsert;
-      return originalInsert(tx, request);
-    };
-    await expect(create.handle(createCmd('2026-11-09', '2026-11-13', KEY))).resolves.toEqual({
-      id: winner.id,
-      created: false,
-    });
   });
 
   it('surfaces a database-detected overlap (lost insert race) as VACATION_OVERLAP', async () => {

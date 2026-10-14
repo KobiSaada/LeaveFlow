@@ -94,7 +94,7 @@ describe('Problem Details contract (AC-20)', () => {
 describe('unexpected errors (AC-21)', () => {
   it('return a generic 500 with no internals, and the next request is served', async () => {
     const container = await getContainer();
-    vi.spyOn(container.queryBus, 'dispatch').mockRejectedValueOnce(
+    vi.spyOn(container.services.vacationRequests, 'listMine').mockRejectedValueOnce(
       new Error('connect ECONNREFUSED 10.1.2.3:5432 password=hunter2'),
     );
     const res = await call('GET', '/me/vacation-requests', { token: alice.token });

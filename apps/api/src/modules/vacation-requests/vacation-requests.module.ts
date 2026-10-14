@@ -1,4 +1,4 @@
-import type { Container } from '../../bootstrap/container';
+import type { CoreContainer } from '../../bootstrap/container';
 import { TypeOrmUserRepository } from '../users/infrastructure/typeorm-user-repository';
 import {
   ApproveVacationRequestCommand,
@@ -13,23 +13,13 @@ import {
   RejectVacationRequestCommand,
   RejectVacationRequestHandler,
 } from './application/commands/reject-vacation-request.command';
-import {
-  GetTeamCalendarHandler,
-  GetTeamCalendarQuery,
-  GetVacationRequestEventsHandler,
-  GetVacationRequestEventsQuery,
-  GetVacationRequestHandler,
-  GetVacationRequestQuery,
-  ListMyVacationRequestsHandler,
-  ListMyVacationRequestsQuery,
-  ListVacationRequestsHandler,
-  ListVacationRequestsQuery,
-} from './application/queries/vacation-request.queries';
+import { VacationRequestQueries } from './application/vacation-request-queries';
 import { TypeOrmVacationRequestReadModel } from './infrastructure/typeorm-vacation-request-read-model';
 import { TypeOrmVacationRequestRepository } from './infrastructure/typeorm-vacation-request-repository';
 
-export function registerVacationRequestsModule(container: Container): void {
-  const { commandBus, queryBus, unitOfWork, clock, dataSource } = container;
+/** Registers the write side (commands) and returns the read side (queries service). */
+export function createVacationRequestsModule(core: CoreContainer): VacationRequestQueries {
+  const { commandBus, unitOfWork, clock, dataSource } = core;
   const requests = new TypeOrmVacationRequestRepository();
   const decider = new VacationRequestDecider(
     unitOfWork,
@@ -51,25 +41,5 @@ export function registerVacationRequestsModule(container: Container): void {
     new RejectVacationRequestHandler(decider),
   );
 
-  const readModel = new TypeOrmVacationRequestReadModel(dataSource);
-  queryBus.register<GetVacationRequestQuery>(
-    GetVacationRequestQuery.type,
-    new GetVacationRequestHandler(readModel),
-  );
-  queryBus.register<ListMyVacationRequestsQuery>(
-    ListMyVacationRequestsQuery.type,
-    new ListMyVacationRequestsHandler(readModel),
-  );
-  queryBus.register<ListVacationRequestsQuery>(
-    ListVacationRequestsQuery.type,
-    new ListVacationRequestsHandler(readModel),
-  );
-  queryBus.register<GetTeamCalendarQuery>(
-    GetTeamCalendarQuery.type,
-    new GetTeamCalendarHandler(readModel),
-  );
-  queryBus.register<GetVacationRequestEventsQuery>(
-    GetVacationRequestEventsQuery.type,
-    new GetVacationRequestEventsHandler(readModel),
-  );
+  return new VacationRequestQueries(new TypeOrmVacationRequestReadModel(dataSource));
 }

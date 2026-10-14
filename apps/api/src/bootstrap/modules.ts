@@ -1,13 +1,15 @@
-import { registerAuthModule } from '../modules/auth/auth.module';
+import { createAuthModule } from '../modules/auth/auth.module';
 import { registerNotificationSubscribers } from '../modules/notifications/notification.subscriber';
-import { registerUsersModule } from '../modules/users/users.module';
-import { registerVacationRequestsModule } from '../modules/vacation-requests/vacation-requests.module';
-import type { Container } from './container';
+import { createUsersModule } from '../modules/users/users.module';
+import { createVacationRequestsModule } from '../modules/vacation-requests/vacation-requests.module';
+import type { AppServices, CoreContainer } from './container';
 
-/** Each module registers its command/query handlers and event subscribers. */
-export function registerModules(container: Container): void {
-  registerAuthModule(container);
-  registerUsersModule(container);
-  registerVacationRequestsModule(container);
-  registerNotificationSubscribers(container.eventBus);
+/** Each module registers its command handlers / subscribers and returns its read service. */
+export function registerModules(core: CoreContainer): AppServices {
+  registerNotificationSubscribers(core.eventBus);
+  return {
+    auth: createAuthModule(core),
+    users: createUsersModule(core),
+    vacationRequests: createVacationRequestsModule(core),
+  };
 }
