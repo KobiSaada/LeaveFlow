@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Generated, PrimaryColumn } from 'typeorm';
 import type { EventPayload } from '../../domain/domain-event';
 
 /** Insert-only record of every domain event (outbox-lite + audit trail). */
@@ -6,6 +6,11 @@ import type { EventPayload } from '../../domain/domain-event';
 export class DomainEventEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;
+
+  /** Total order of events (identity column); assigned by the database on insert. */
+  @Column({ type: 'bigint', insert: false, update: false })
+  @Generated('increment')
+  seq: string;
 
   @Column({ type: 'varchar', length: 50, name: 'aggregate_type' })
   aggregateType: string;

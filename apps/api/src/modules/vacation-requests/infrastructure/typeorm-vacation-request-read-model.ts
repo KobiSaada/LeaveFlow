@@ -165,8 +165,7 @@ export class TypeOrmVacationRequestReadModel implements VacationRequestReadModel
         'e.occurred_at AS occurred_at',
       ])
       .where('e.aggregate_id = :requestId', { requestId })
-      .orderBy('e.occurred_at', 'ASC')
-      .addOrderBy('e.id', 'ASC')
+      .orderBy('e.seq', 'ASC')
       .getRawMany<{
         id: string;
         event_type: VacationRequestEventDto['eventType'];

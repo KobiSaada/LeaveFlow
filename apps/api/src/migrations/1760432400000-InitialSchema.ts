@@ -70,6 +70,8 @@ export class InitialSchema1760432400000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE domain_events (
         id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        -- Insertion-order sequence: timestamps can tie; gives a stable total order per aggregate.
+        seq            bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
         aggregate_type varchar(50)  NOT NULL,
         aggregate_id   uuid         NOT NULL,
         event_type     varchar(100) NOT NULL,
@@ -78,7 +80,7 @@ export class InitialSchema1760432400000 implements MigrationInterface {
         occurred_at    timestamptz  NOT NULL DEFAULT now()
       )`);
     await queryRunner.query(
-      `CREATE INDEX domain_events_aggregate_idx ON domain_events (aggregate_id, occurred_at)`,
+      `CREATE INDEX domain_events_aggregate_idx ON domain_events (aggregate_id, seq)`,
     );
   }
 

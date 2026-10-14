@@ -31,6 +31,14 @@ export class TypeOrmVacationRequestRepository implements VacationRequestReposito
     return entityManagerOf(tx).getRepository(VacationRequestEntity);
   }
 
+  async lockScheduleOf(tx: Transaction, userId: string): Promise<void> {
+    // Transaction-scoped advisory lock (released on COMMIT/ROLLBACK). Unlike SELECT … FOR UPDATE on
+    // users, it does not block unrelated foreign-key checks against the user row.
+    await entityManagerOf(tx).query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [
+      `vacation-schedule:${userId}`,
+    ]);
+  }
+
   async findById(tx: Transaction, id: string): Promise<VacationRequest | null> {
     const row = await this.repo(tx).findOneBy({ id });
     return row ? toDomain(row) : null;

@@ -49,13 +49,17 @@ export class CreateVacationRequestHandler implements MessageHandler<CreateVacati
     try {
       return await this.unitOfWork.run((tx) => this.create(tx, command));
     } catch (error) {
-      if (!(error instanceof IdempotencyKeyRaceError)) throw error;
-      // A concurrent call with the same key committed first; its transaction is visible now.
-      return this.unitOfWork.run(async (tx) => {
-        const replay = await this.replay(tx, command);
-        if (!replay) throw error;
-        return replay;
-      });
+      // Lost a race against a concurrent call carrying the same Idempotency-Key. Depending on which
+      // index PostgreSQL checks first, the loser sees the key's unique index or the overlap
+      // exclusion constraint (the winner's identical range). Either way the winner has committed:
+      // replay it instead of reporting a conflict to a client that only retried.
+      const keyRace =
+        error instanceof IdempotencyKeyRaceError ||
+        (command.idempotencyKey !== null && error instanceof VacationOverlapError);
+      if (!keyRace) throw error;
+      const replay = await this.unitOfWork.run((tx) => this.replay(tx, command));
+      if (replay) return replay;
+      throw error;
     }
   }
 
@@ -63,6 +67,8 @@ export class CreateVacationRequestHandler implements MessageHandler<CreateVacati
     tx: Transaction,
     command: CreateVacationRequestCommand,
   ): Promise<CreateVacationRequestResult> {
+    // One writer per user schedule: every read below sees all previously committed requests.
+    await this.requests.lockScheduleOf(tx, command.actor.userId);
     const replay = await this.replay(tx, command);
     if (replay) return replay;
 

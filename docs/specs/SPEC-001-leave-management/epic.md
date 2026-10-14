@@ -10,7 +10,7 @@
 | Title | LeaveFlow — Vacation Request Management |
 | Status | `in-progress` |
 | Brownfield | no — greenfield repository |
-| Version | 0.2 |
+| Version | 0.3 |
 | Owner | Kobi Saada |
 | Contributors | Claude (AI pair, permitted by the assignment) |
 | Created | 2026-10-14 |
@@ -326,6 +326,7 @@ CREATE UNIQUE INDEX vr_user_idempotency_key
 
 CREATE TABLE domain_events (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  seq            bigint GENERATED ALWAYS AS IDENTITY UNIQUE,  -- stable order; timestamps can tie
   aggregate_type varchar(50)  NOT NULL,
   aggregate_id   uuid         NOT NULL,
   event_type     varchar(100) NOT NULL,
@@ -333,7 +334,7 @@ CREATE TABLE domain_events (
   actor_id       uuid         NOT NULL REFERENCES users(id),
   occurred_at    timestamptz  NOT NULL DEFAULT now()
 );
-CREATE INDEX domain_events_aggregate_idx ON domain_events (aggregate_id, occurred_at);
+CREATE INDEX domain_events_aggregate_idx ON domain_events (aggregate_id, seq);
 ```
 
 **Index → query justification:**
@@ -480,6 +481,7 @@ Dependency rule: `domain` imports nothing outside itself and `shared/domain`; `a
 - **Our own CommandBus/EventBus instead of a library.** Each is ~one small file, typed, with a middleware pipeline. Rejected: NestJS CQRS (would replace CEF's routing — the very thing being evaluated), DI containers relying on `emitDecoratorMetadata` (see next point).
 - **Explicit column types and manual DI.** CEF's build bundles with esbuild, and the dev runner (`tsx`) is esbuild too; esbuild does not emit decorator metadata. Every TypeORM `@Column` therefore declares its type explicitly, entities and migrations are registered as classes (not globs), and the composition root wires dependencies by hand.
 - **Overlap: exclusion constraint, not check-then-insert.** Two concurrent inserts can both pass an application `SELECT`. `EXCLUDE USING gist` makes the database the source of truth; Postgres error `23P01` is translated to `409 VACATION_OVERLAP`. The domain still pre-checks to give a message naming the conflicting range.
+- **Per-user write serialisation for submissions.** Concurrent inserts that conflict on an exclusion constraint can *deadlock* each other in PostgreSQL (each waits on the other's index entry), which surfaced as `500`s under a 10-way race in the integration suite. `CreateVacationRequestCommand` therefore takes a transaction-scoped advisory lock on the user's schedule (`pg_advisory_xact_lock`) before reading: submissions of one user run one at a time, the pre-check sees every committed request, and the exclusion constraint remains the safety net. An advisory lock was chosen over `SELECT … FOR UPDATE` on `users` so unrelated foreign-key checks against the user row are not blocked. The unit of work additionally retries a transaction (max 3 attempts, jittered) on `40P01`/`40001` as generic protection.
 - **Decisions: compare-and-set `UPDATE … WHERE status = 'PENDING'`, not load-modify-`save()`.** The aggregate validates the transition and records the event; the repository persists with the status guard. Zero affected rows ⇒ re-read: same target status ⇒ idempotent no-op (FR-24); different ⇒ `409`. Rejected: `version` column (adds a concept for no extra safety here); `SELECT … FOR UPDATE` (correct, but the CAS is simpler and needs no lock-holding).
 - **Outbox-lite.** Writing events in the same transaction guarantees no event is recorded for a rolled-back change and no committed change lacks its event; dispatching after commit means subscribers never act on uncommitted state. The gap (an event may be persisted but not dispatched if the process dies between commit and publish) is acceptable for an in-process log subscriber and is documented; the production path is a relay — or, in TravelFactory's stack, an `EventPublisher` adapter that sends to SQS, which CEF can already receive (`/sqs/{queue}` routes).
 - **`decided_by` / `decided_at` added.** "Approved by whom and when" is basic accountability and lets the DB enforce decision consistency. Additive to the brief's schema.
@@ -900,4 +902,5 @@ Every task in this spec is held to the universal verification-rigour rules in `S
 | Date | Version | What changed (sections) | Tasks invalidated | Reason | Approved by |
 |---|---|---|---|---|---|
 | 2026-10-14 | 0.1 | initial draft | — | — | — |
+| 2026-10-14 | 0.3 | §10.1 `domain_events.seq` identity column + index on (aggregate_id, seq); §11.3 per-user advisory lock and transient-error retry | T-003 (migration amended pre-release), T-006 | integration race tests exposed event-order ties under a fixed clock and exclusion-constraint deadlocks returning 500 | Kobi (via approved execution) |
 | 2026-10-14 | 0.2 | §1 status approved → in-progress; §11.2/§20/§23.2 Node floor 22 → 20.19 (reviewer machines; Vite 7 floor); Postgres host port 5544 (5432 commonly occupied) | none (pre-decomposition) | environment check before T-001 | Kobi |

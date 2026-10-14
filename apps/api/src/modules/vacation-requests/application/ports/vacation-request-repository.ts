@@ -11,6 +11,12 @@ export class IdempotencyKeyRaceError extends Error {
 }
 
 export interface VacationRequestRepository {
+  /**
+   * Serialises writers of one user's schedule for the rest of the transaction. Without it,
+   * concurrent conflicting inserts deadlock on the exclusion constraint instead of one of them
+   * cleanly seeing the other's committed request.
+   */
+  lockScheduleOf(tx: Transaction, userId: string): Promise<void>;
   findById(tx: Transaction, id: string): Promise<VacationRequest | null>;
   findByIdempotencyKey(
     tx: Transaction,

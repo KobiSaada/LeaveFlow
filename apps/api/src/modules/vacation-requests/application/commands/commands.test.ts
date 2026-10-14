@@ -53,6 +53,7 @@ class FakeRepository implements VacationRequestRepository {
   beforeSaveDecision?: (id: string) => void;
   failInsertWith?: Error;
 
+  async lockScheduleOf() {}
   async findById(_tx: Transaction, id: string) {
     const row = this.rows.get(id);
     return row ? VacationRequest.rehydrate(row.snapshot()) : null;

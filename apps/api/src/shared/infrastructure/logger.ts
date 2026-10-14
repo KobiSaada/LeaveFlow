@@ -1,4 +1,4 @@
-import pino, { type Logger } from 'pino';
+import pino, { type DestinationStream, type Logger } from 'pino';
 import { requestContext } from '../http/request-context';
 
 /**
@@ -27,21 +27,29 @@ const REDACT_PATHS = [
 
 let root: Logger | undefined;
 
-function createRootLogger(): Logger {
-  const level = process.env.LOG_LEVEL ?? 'info';
-  const pretty = process.env.NODE_ENV === 'development' && process.stdout.isTTY;
-  return pino({
+/** The production logger configuration; `destination` lets tests capture output. */
+export function createLogger(
+  options: { level?: string; destination?: DestinationStream } = {},
+): Logger {
+  const level = options.level ?? process.env.LOG_LEVEL ?? 'info';
+  const settings = {
     level,
     base: { service: 'leaveflow-api' },
     redact: { paths: REDACT_PATHS, censor: '[REDACTED]' },
     timestamp: pino.stdTimeFunctions.isoTime,
-    ...(pretty ? { transport: { target: 'pino-pretty', options: { singleLine: true } } } : {}),
-  });
+  };
+  if (options.destination) return pino(settings, options.destination);
+  const pretty = process.env.NODE_ENV === 'development' && process.stdout.isTTY;
+  return pino(
+    pretty
+      ? { ...settings, transport: { target: 'pino-pretty', options: { singleLine: true } } }
+      : settings,
+  );
 }
 
 /** Created on first use, after CEF's loadEnv() has populated process.env. */
 export function rootLogger(): Logger {
-  root ??= createRootLogger();
+  root ??= createLogger();
   return root;
 }
 
