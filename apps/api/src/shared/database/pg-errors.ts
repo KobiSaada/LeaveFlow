@@ -6,9 +6,9 @@ export const PG_ERROR = {
   EXCLUSION_VIOLATION: '23P01',
 } as const;
 
-export type PgErrorCode = (typeof PG_ERROR)[keyof typeof PG_ERROR];
+type PgErrorCode = (typeof PG_ERROR)[keyof typeof PG_ERROR];
 
-export interface PgConstraintViolation {
+interface PgConstraintViolation {
   code: PgErrorCode;
   constraint: string | undefined;
 }

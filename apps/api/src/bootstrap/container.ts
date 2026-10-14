@@ -42,7 +42,7 @@ export interface Container extends CoreContainer {
   services: AppServices;
 }
 
-export interface ContainerOverrides {
+interface ContainerOverrides {
   clock?: Clock;
 }
 

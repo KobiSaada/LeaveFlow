@@ -1,7 +1,6 @@
 import {
   approveVacationRequestSchema,
   createVacationRequestSchema,
-  idempotencyKeySchema,
   listMyVacationRequestsQuerySchema,
   listVacationRequestsQuerySchema,
   rejectVacationRequestSchema,
@@ -25,8 +24,7 @@ const createVacationRequest = endpoint({
     const header = request.header('idempotency-key');
     return {
       body: validate(createVacationRequestSchema, request.body(), 'body'),
-      idempotencyKey:
-        header === undefined ? null : validate(idempotencyKeySchema, header, 'header'),
+      idempotencyKey: header === undefined ? null : validate(uuidSchema, header, 'header'),
     };
   },
   handle: async ({ body, idempotencyKey }, { principal, container }) => {

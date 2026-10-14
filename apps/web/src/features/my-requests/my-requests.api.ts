@@ -6,7 +6,7 @@ import type {
 } from '@leaveflow/contracts';
 import { http } from '@/shared/api/http';
 
-export interface PageParams {
+interface PageParams {
   page: number;
   pageSize: number;
 }

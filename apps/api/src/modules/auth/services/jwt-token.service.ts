@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { Principal, TokenIssuer, TokenVerifier } from '../../../shared/security/principal';
 import { UnauthenticatedError } from '../../../shared/errors/application-errors';
 
-export interface JwtSettings {
+interface JwtSettings {
   secret: string;
   issuer: string;
   audience: string;

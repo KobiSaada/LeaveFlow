@@ -16,9 +16,9 @@ import {
 export type Decision = 'APPROVED' | 'REJECTED';
 
 /** Result of a decision: `unchanged` means the request already had that decision (idempotent). */
-export type DecisionOutcome = 'decided' | 'unchanged';
+type DecisionOutcome = 'decided' | 'unchanged';
 
-export interface VacationRequestState {
+interface VacationRequestState {
   id: string;
   userId: string;
   range: DateRange;
@@ -30,7 +30,7 @@ export interface VacationRequestState {
   idempotencyKey: string | null;
 }
 
-export interface SubmitVacationRequest {
+interface SubmitVacationRequest {
   id: string;
   requesterId: string;
   range: DateRange;

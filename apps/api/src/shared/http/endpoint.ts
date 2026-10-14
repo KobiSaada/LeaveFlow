@@ -10,13 +10,13 @@ import { EndpointRequest } from './request';
 type Access = 'public' | readonly UserRole[];
 type PrincipalFor<A extends Access> = A extends 'public' ? null : Principal;
 
-export interface EndpointContext<A extends Access> {
+interface EndpointContext<A extends Access> {
   principal: PrincipalFor<A>;
   container: Container;
   request: EndpointRequest;
 }
 
-export interface EndpointSpec<A extends Access, TInput> {
+interface EndpointSpec<A extends Access, TInput> {
   /** `'public'`, or the roles allowed to call the endpoint. */
   access: A;
   /** Turns the raw request into typed, validated input. Runs only after authorization succeeded. */

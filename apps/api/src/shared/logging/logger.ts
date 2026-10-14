@@ -48,7 +48,7 @@ export function createLogger(
 }
 
 /** Created on first use, after CEF's loadEnv() has populated process.env. */
-export function rootLogger(): Logger {
+function rootLogger(): Logger {
   root ??= createLogger();
   return root;
 }

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { DomainEvent } from '../../../shared/domain/domain-event';
 
-export const VACATION_REQUEST_AGGREGATE = 'VacationRequest';
+const VACATION_REQUEST_AGGREGATE = 'VacationRequest';
 
 // Payloads hold identifiers and dates only — never reason or comment text (free-text PII).
 export type VacationRequestCreated = DomainEvent<
@@ -17,7 +17,7 @@ export type VacationRequestRejected = DomainEvent<
   { userId: string; decidedBy: string }
 >;
 
-export type VacationRequestEvent =
+type VacationRequestEvent =
   VacationRequestCreated | VacationRequestApproved | VacationRequestRejected;
 
 export function vacationRequestEvent<E extends VacationRequestEvent>(

@@ -4,7 +4,7 @@ import type { Transaction, UnitOfWork } from '../cqrs/unit-of-work';
 import type { DomainEvent } from '../domain/domain-event';
 import { DomainEventEntity } from './domain-event.entity';
 
-export class TypeOrmTransaction implements Transaction {
+class TypeOrmTransaction implements Transaction {
   readonly events: DomainEvent[] = [];
 
   constructor(readonly manager: EntityManager) {}

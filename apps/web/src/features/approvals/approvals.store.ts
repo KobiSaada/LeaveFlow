@@ -7,7 +7,7 @@ import { type ApprovalsQuery, approvalsApi } from './approvals.api';
 
 export type Decision = 'approve' | 'reject';
 
-export interface DecisionOutcome {
+interface DecisionOutcome {
   kind: 'success' | 'conflict' | 'error';
   message: string;
 }

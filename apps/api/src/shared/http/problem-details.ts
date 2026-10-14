@@ -11,7 +11,7 @@ function problemType(code: ErrorCode): string {
   return `urn:leaveflow:problem:${code.toLowerCase().replace(/_/g, '-')}`;
 }
 
-export interface MappedProblem {
+interface MappedProblem {
   status: number;
   body: ProblemDetails;
   /** True when the error was not anticipated and must be logged with its stack. */

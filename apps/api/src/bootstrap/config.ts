@@ -31,7 +31,7 @@ export interface AppConfig {
   logLevel: z.infer<typeof envSchema>['LOG_LEVEL'];
 }
 
-export class ConfigError extends Error {
+class ConfigError extends Error {
   override readonly name = 'ConfigError';
 }
 

@@ -1,10 +1,8 @@
 import type { DomainEvent } from '../domain/domain-event';
 
-export type EventSubscriber<E extends DomainEvent = DomainEvent> = (
-  event: E,
-) => Promise<void> | void;
+type EventSubscriber<E extends DomainEvent = DomainEvent> = (event: E) => Promise<void> | void;
 
-export interface EventBusErrorReporter {
+interface EventBusErrorReporter {
   (error: unknown, event: DomainEvent, subscriberName: string): void;
 }
 

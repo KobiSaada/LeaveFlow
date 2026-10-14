@@ -57,8 +57,6 @@ export const rejectVacationRequestSchema = z
   .default({});
 export type RejectVacationRequestBody = z.input<typeof rejectVacationRequestSchema>;
 
-export const idempotencyKeySchema = uuidSchema;
-
 export const paginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(PAGE_SIZE_DEFAULT),
