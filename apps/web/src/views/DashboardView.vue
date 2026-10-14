@@ -96,6 +96,8 @@ async function decide(comment: string | null): Promise<void> {
     deciding.value = false;
     dialog.value = null;
     await reload();
+    // The decided row may have been the last one on this page (e.g. under the Pending filter).
+    if (items.value.length === 0 && page.value > 1) setQuery({ page: String(page.value - 1) });
   }
 }
 

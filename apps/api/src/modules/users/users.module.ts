@@ -1,7 +1,6 @@
-import type { CoreContainer } from '../../bootstrap/container';
+import type { UserRepository } from './application/user-repository';
 import { UsersService } from './application/users.service';
-import { TypeOrmUserRepository } from './infrastructure/typeorm-user-repository';
 
-export function createUsersModule({ dataSource }: CoreContainer): UsersService {
-  return new UsersService(new TypeOrmUserRepository(dataSource));
+export function createUsersModule(users: UserRepository): UsersService {
+  return new UsersService(users);
 }

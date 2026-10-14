@@ -104,7 +104,7 @@ paths:
         '409': { description: VACATION_OVERLAP | IDEMPOTENCY_KEY_REUSED }
         '422': { description: VALIDATION_FAILED | INVALID_DATE_RANGE | START_DATE_IN_PAST }
     get:
-      summary: List all requests (ListVacationRequestsQuery)
+      summary: List all requests (validator dashboard)
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
       x-handler: modules/vacation-requests/controllers/vacation-requests.controller#listVacationRequestsHandler
@@ -123,7 +123,7 @@ paths:
         '403': { description: FORBIDDEN — validators only }
   /me/vacation-requests:
     get:
-      summary: The caller's own requests (ListMyVacationRequestsQuery)
+      summary: The caller's own requests
       tags: [Vacation requests]
       security: [{ bearerAuth: [] }]
       x-handler: modules/vacation-requests/controllers/vacation-requests.controller#listMyVacationRequestsHandler

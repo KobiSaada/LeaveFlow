@@ -5,7 +5,7 @@ import type { DomainEvent } from '../../../../shared/domain/domain-event';
 import { ForbiddenError } from '../../../../shared/domain/errors';
 import { FixedClock } from '../../../../shared/infrastructure/clock';
 import type { UserRepository } from '../../../users/application/user-repository';
-import { type DateRange } from '../../domain/date-range';
+import type { DateRange } from '../../domain/date-range';
 import { VacationRequest } from '../../domain/vacation-request';
 import {
   IdempotencyKeyReusedError,

@@ -61,6 +61,7 @@ export const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore();
+  auth.dropExpiredSession();
   if (to.meta.guestOnly && auth.isAuthenticated) return auth.homeRoute;
   if (to.meta.roles) {
     if (!auth.isAuthenticated) return { path: '/login', query: { redirect: to.fullPath } };

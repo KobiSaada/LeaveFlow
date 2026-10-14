@@ -22,8 +22,8 @@ export interface VacationRequestRepository {
     range: DateRange,
   ): Promise<VacationRequest | null>;
   /**
-   * Inserts a new request. The database constraints are a safety net behind the handler's checks:
-   * an overlap maps to VacationOverlapError, a duplicate idempotency key to IdempotencyKeyReusedError.
+   * Inserts a new request. The database constraints are a safety net behind the handler's checks;
+   * an overlap still maps to VacationOverlapError.
    */
   insert(tx: Transaction, request: VacationRequest): Promise<void>;
   /**

@@ -165,8 +165,8 @@ describe('Idempotency-Key (AC-9)', () => {
     });
   });
 
-  // Repeated: the losing-race paths (unique index, exclusion constraint, deadlock retry) are
-  // timing-dependent, and a single round passed while a deadlock still surfaced as a 500.
+  // Repeated: races are timing-dependent — a single round once passed while concurrent inserts
+  // still deadlocked into 500s (fixed by the per-user schedule lock).
   it('resolves 8 parallel retries with one key to a single request', { repeats: 15 }, async () => {
     const user = await createUser('REQUESTER');
     const key = randomUUID();

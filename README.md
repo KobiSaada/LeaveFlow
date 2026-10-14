@@ -271,7 +271,7 @@ Lists return `{ items, pageInfo: { page, pageSize, totalItems, totalPages } }`.
 ## Testing
 
 ```bash
-npm run db:up && npm test      # 194 tests
+npm run db:up && npm test      # 196 tests
 ```
 
 | Suite                | Count | What it proves                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |

@@ -48,16 +48,16 @@ const createVacationRequest = endpoint({
 const listMyVacationRequests = endpoint({
   access: ['REQUESTER'],
   parse: (request) => validate(listMyVacationRequestsQuerySchema, request.query(), 'query'),
-  handle: async ({ status, ...page }, { principal, container }) =>
-    HttpResponse.ok(await container.services.vacationRequests.listMine(principal, page, status)),
+  handle: async (filter, { principal, container }) =>
+    HttpResponse.ok(await container.services.vacationRequests.listMine(principal, filter)),
 });
 
 /** GET /vacation-requests — all requests, filterable by status and user. */
 const listVacationRequests = endpoint({
   access: ['VALIDATOR'],
   parse: (request) => validate(listVacationRequestsQuerySchema, request.query(), 'query'),
-  handle: async ({ status, userId, ...page }, { container }) =>
-    HttpResponse.ok(await container.services.vacationRequests.listAll(page, { status, userId })),
+  handle: async (filter, { container }) =>
+    HttpResponse.ok(await container.services.vacationRequests.listAll(filter)),
 });
 
 /** POST /vacation-requests/:id/approve */

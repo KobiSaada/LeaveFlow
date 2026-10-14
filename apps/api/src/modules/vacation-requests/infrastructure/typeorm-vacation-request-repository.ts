@@ -6,7 +6,7 @@ import { entityManagerOf } from '../../../shared/infrastructure/database/typeorm
 import type { VacationRequestRepository } from '../application/ports/vacation-request-repository';
 import { DateRange } from '../domain/date-range';
 import { VacationRequest } from '../domain/vacation-request';
-import { IdempotencyKeyReusedError, VacationOverlapError } from '../domain/vacation-request.errors';
+import { VacationOverlapError } from '../domain/vacation-request.errors';
 import { VacationRequestEntity } from './vacation-request.entity';
 
 function toDomain(row: VacationRequestEntity): VacationRequest {
@@ -92,12 +92,8 @@ export class TypeOrmVacationRequestRepository implements VacationRequestReposito
       ) {
         throw new VacationOverlapError();
       }
-      if (
-        violation?.code === PG_ERROR.UNIQUE_VIOLATION &&
-        violation.constraint === 'vr_user_idempotency_key'
-      ) {
-        throw new IdempotencyKeyReusedError();
-      }
+      // A duplicate idempotency key cannot happen here (the handler holds the user's schedule lock
+      // and replays first), so it is deliberately left unmapped: an impossible state is a 500.
       throw error;
     }
   }

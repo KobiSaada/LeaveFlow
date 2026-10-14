@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { UnauthenticatedError } from '../../../shared/domain/errors';
 import type { UserCredentials, UserRepository } from '../../users/application/user-repository';
 import { AuthService, InvalidCredentialsError } from './auth.service';
 import type { PasswordHasher } from './password-hasher';
@@ -56,5 +57,20 @@ describe('AuthService.login', () => {
     );
     expect(hasher.verifyAgainstDummy).toHaveBeenCalledWith('x');
     expect(hasher.verify).not.toHaveBeenCalled();
+  });
+});
+
+describe('AuthService.me', () => {
+  it('returns the public profile of the token subject', async () => {
+    const { service, users } = setup(alice, true);
+    const { passwordHash: _omit, ...profile } = alice;
+    vi.mocked(users.findById).mockResolvedValue(profile);
+    await expect(service.me(alice.id)).resolves.toEqual(profile);
+  });
+
+  it('treats a token for a user that no longer exists as unauthenticated', async () => {
+    const { service, users } = setup(alice, true);
+    vi.mocked(users.findById).mockResolvedValue(null);
+    await expect(service.me(alice.id)).rejects.toBeInstanceOf(UnauthenticatedError);
   });
 });

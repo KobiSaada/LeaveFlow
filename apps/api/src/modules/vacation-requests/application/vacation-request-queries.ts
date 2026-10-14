@@ -4,16 +4,13 @@ import type {
   TeamCalendarEntry,
   VacationRequestDto,
   VacationRequestEventDto,
-  VacationRequestStatus,
 } from '@leaveflow/contracts';
 import type { Principal } from '../../../shared/application/principal';
 import { VacationRequestNotFoundError } from '../domain/vacation-request.errors';
-import type { VacationRequestReadModel } from './ports/vacation-request-read-model';
-
-export interface PageRequest {
-  page: number;
-  pageSize: number;
-}
+import type {
+  VacationRequestListFilter,
+  VacationRequestReadModel,
+} from './ports/vacation-request-read-model';
 
 /**
  * Read side of vacation requests. Reads change nothing, so they are plain service methods —
@@ -31,17 +28,13 @@ export class VacationRequestQueries {
   /** The caller's own requests. The scope comes from the token only — never from client input. */
   listMine(
     viewer: Principal,
-    { page, pageSize }: PageRequest,
-    status?: VacationRequestStatus,
+    filter: Omit<VacationRequestListFilter, 'userId'>,
   ): Promise<Page<VacationRequestDto>> {
-    return this.readModel.list({ userId: viewer.userId, status, page, pageSize });
+    return this.readModel.list({ ...filter, userId: viewer.userId });
   }
 
-  listAll(
-    { page, pageSize }: PageRequest,
-    filter: { status?: VacationRequestStatus; userId?: string },
-  ): Promise<Page<VacationRequestDto>> {
-    return this.readModel.list({ ...filter, page, pageSize });
+  listAll(filter: VacationRequestListFilter): Promise<Page<VacationRequestDto>> {
+    return this.readModel.list(filter);
   }
 
   teamCalendar(from: IsoDate, to: IsoDate): Promise<TeamCalendarEntry[]> {

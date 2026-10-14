@@ -61,5 +61,23 @@ export const useAuthStore = defineStore('auth', () => {
     writeSession(null);
   }
 
-  return { session, isAuthenticated, user, role, token, homeRoute, login, logout };
+  /**
+   * `Date.now()` is not reactive, so computed state cannot notice expiry by itself.
+   * The router calls this on every navigation to drop a session whose token has expired.
+   */
+  function dropExpiredSession(): void {
+    if (session.value && session.value.expiresAt <= Date.now()) logout();
+  }
+
+  return {
+    session,
+    isAuthenticated,
+    user,
+    role,
+    token,
+    homeRoute,
+    login,
+    logout,
+    dropExpiredSession,
+  };
 });

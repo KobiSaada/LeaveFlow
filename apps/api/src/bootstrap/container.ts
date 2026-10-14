@@ -13,7 +13,7 @@ import { getDataSource } from '../shared/infrastructure/database/data-source';
 import { TypeOrmUnitOfWork } from '../shared/infrastructure/database/typeorm-unit-of-work';
 import { logger } from '../shared/infrastructure/logger';
 import { type AppConfig, loadConfig } from './config';
-import { registerModules } from './modules';
+import { createModules } from './modules';
 
 /** Infrastructure shared by every module. */
 export interface CoreContainer {
@@ -90,7 +90,7 @@ async function buildContainer(overrides: ContainerOverrides): Promise<Container>
     eventBus,
     unitOfWork: new TypeOrmUnitOfWork(dataSource, eventBus),
   };
-  return { ...core, services: registerModules(core) };
+  return { ...core, services: createModules(core) };
 }
 
 let containerPromise: Promise<Container> | undefined;

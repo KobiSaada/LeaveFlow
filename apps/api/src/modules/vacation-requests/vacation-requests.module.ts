@@ -1,5 +1,5 @@
 import type { CoreContainer } from '../../bootstrap/container';
-import { TypeOrmUserRepository } from '../users/infrastructure/typeorm-user-repository';
+import type { UserRepository } from '../users/application/user-repository';
 import {
   ApproveVacationRequestCommand,
   ApproveVacationRequestHandler,
@@ -18,15 +18,13 @@ import { TypeOrmVacationRequestReadModel } from './infrastructure/typeorm-vacati
 import { TypeOrmVacationRequestRepository } from './infrastructure/typeorm-vacation-request-repository';
 
 /** Registers the write side (commands) and returns the read side (queries service). */
-export function createVacationRequestsModule(core: CoreContainer): VacationRequestQueries {
+export function createVacationRequestsModule(
+  core: CoreContainer,
+  users: UserRepository,
+): VacationRequestQueries {
   const { commandBus, unitOfWork, clock, dataSource } = core;
   const requests = new TypeOrmVacationRequestRepository();
-  const decider = new VacationRequestDecider(
-    unitOfWork,
-    requests,
-    new TypeOrmUserRepository(dataSource),
-    clock,
-  );
+  const decider = new VacationRequestDecider(unitOfWork, requests, users, clock);
 
   commandBus.register<CreateVacationRequestCommand>(
     CreateVacationRequestCommand.type,
