@@ -11,9 +11,9 @@ import {
 import { z } from 'zod';
 import { endpoint, HttpResponse } from '../../../shared/http/endpoint';
 import { type EndpointRequest, validate } from '../../../shared/http/request';
-import { ApproveVacationRequestCommand } from '../application/commands/approve-vacation-request.command';
-import { CreateVacationRequestCommand } from '../application/commands/create-vacation-request.command';
-import { RejectVacationRequestCommand } from '../application/commands/reject-vacation-request.command';
+import { ApproveVacationRequestCommand } from '../commands/approve-vacation-request.command';
+import { CreateVacationRequestCommand } from '../commands/create-vacation-request.command';
+import { RejectVacationRequestCommand } from '../commands/reject-vacation-request.command';
 
 const pathId = (request: EndpointRequest): string =>
   validate(z.object({ id: uuidSchema }), { id: request.pathParam('id') }, 'path').id;

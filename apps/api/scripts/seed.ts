@@ -16,10 +16,10 @@ import type { Principal } from '../src/shared/security/principal';
 import { closeDataSource } from '../src/shared/database/data-source';
 import { setRootLogger } from '../src/shared/logging/logger';
 import { UserEntity } from '../src/modules/users/entities/user.entity';
-import { VacationRequestEntity } from '../src/modules/vacation-requests/infrastructure/vacation-request.entity';
-import { ApproveVacationRequestCommand } from '../src/modules/vacation-requests/application/commands/approve-vacation-request.command';
-import { CreateVacationRequestCommand } from '../src/modules/vacation-requests/application/commands/create-vacation-request.command';
-import { RejectVacationRequestCommand } from '../src/modules/vacation-requests/application/commands/reject-vacation-request.command';
+import { VacationRequestEntity } from '../src/modules/vacation-requests/entities/vacation-request.entity';
+import { ApproveVacationRequestCommand } from '../src/modules/vacation-requests/commands/approve-vacation-request.command';
+import { CreateVacationRequestCommand } from '../src/modules/vacation-requests/commands/create-vacation-request.command';
+import { RejectVacationRequestCommand } from '../src/modules/vacation-requests/commands/reject-vacation-request.command';
 import pino from 'pino';
 
 export const DEMO_PASSWORD = 'LeaveFlow!2026';

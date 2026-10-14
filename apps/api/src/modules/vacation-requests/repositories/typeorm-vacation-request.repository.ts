@@ -3,11 +3,11 @@ import type { EntityManager } from 'typeorm';
 import type { Transaction } from '../../../shared/cqrs/unit-of-work';
 import { asConstraintViolation, PG_ERROR } from '../../../shared/database/pg-errors';
 import { entityManagerOf } from '../../../shared/database/typeorm-unit-of-work';
-import type { VacationRequestRepository } from '../application/ports/vacation-request-repository';
+import type { VacationRequestRepository } from './vacation-request.repository';
 import { DateRange } from '../domain/date-range';
 import { VacationRequest } from '../domain/vacation-request';
 import { VacationOverlapError } from '../domain/vacation-request.errors';
-import { VacationRequestEntity } from './vacation-request.entity';
+import { VacationRequestEntity } from '../entities/vacation-request.entity';
 
 function toDomain(row: VacationRequestEntity): VacationRequest {
   return VacationRequest.rehydrate({

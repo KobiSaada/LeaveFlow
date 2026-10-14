@@ -2,7 +2,7 @@ import type { DataSource } from 'typeorm';
 import type { AuthService } from '../modules/auth/services/auth.service';
 import { JwtTokenService } from '../modules/auth/services/jwt-token.service';
 import type { UsersService } from '../modules/users/services/users.service';
-import type { VacationRequestQueries } from '../modules/vacation-requests/application/vacation-request-queries';
+import type { VacationRequestsService } from '../modules/vacation-requests/services/vacation-requests.service';
 import { CommandBus, type Middleware } from '../shared/cqrs/command-bus';
 import type { Clock } from '../shared/time/clock';
 import { EventBus } from '../shared/cqrs/event-bus';
@@ -31,7 +31,7 @@ export interface CoreContainer {
 export interface AppServices {
   auth: AuthService;
   users: UsersService;
-  vacationRequests: VacationRequestQueries;
+  vacationRequests: VacationRequestsService;
 }
 
 /**

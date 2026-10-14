@@ -1,23 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import type { Principal } from '../../../../shared/security/principal';
-import type { Transaction, UnitOfWork } from '../../../../shared/cqrs/unit-of-work';
-import type { DomainEvent } from '../../../../shared/domain/domain-event';
-import { ForbiddenError } from '../../../../shared/errors/application-errors';
-import { FixedClock } from '../../../../shared/time/clock';
-import type { UserRepository } from '../../../users/repositories/user.repository';
-import type { DateRange } from '../../domain/date-range';
-import { VacationRequest } from '../../domain/vacation-request';
+import type { Principal } from '../../../shared/security/principal';
+import type { Transaction, UnitOfWork } from '../../../shared/cqrs/unit-of-work';
+import type { DomainEvent } from '../../../shared/domain/domain-event';
+import { ForbiddenError } from '../../../shared/errors/application-errors';
+import { FixedClock } from '../../../shared/time/clock';
+import type { UserRepository } from '../../users/repositories/user.repository';
+import type { DateRange } from '../domain/date-range';
+import { VacationRequest } from '../domain/vacation-request';
 import {
   IdempotencyKeyReusedError,
   RequestNotPendingError,
   VacationOverlapError,
-} from '../../domain/vacation-request.errors';
-import type { VacationRequestRepository } from '../ports/vacation-request-repository';
-import {
-  CreateVacationRequestCommand,
-  CreateVacationRequestHandler,
-} from './create-vacation-request.command';
-import { VacationRequestDecider } from './decide-vacation-request';
+} from '../domain/vacation-request.errors';
+import type { VacationRequestRepository } from '../repositories/vacation-request.repository';
+import { CreateVacationRequestCommand } from './create-vacation-request.command';
+import { CreateVacationRequestHandler } from './create-vacation-request.handler';
+import { VacationRequestDecider } from './vacation-request-decider';
 
 const alice: Principal = {
   userId: '8c1d6661-f2f8-45be-9424-7a9ddaafb0a3',

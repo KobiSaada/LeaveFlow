@@ -1,37 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import type { IsoDate } from '@leaveflow/contracts';
-import { Command, type CommandHandler } from '../../../../shared/cqrs/command-bus';
-import type { Clock } from '../../../../shared/time/clock';
-import type { Principal } from '../../../../shared/security/principal';
-import type { Transaction, UnitOfWork } from '../../../../shared/cqrs/unit-of-work';
-import { ForbiddenError } from '../../../../shared/errors/application-errors';
-import { DateRange } from '../../domain/date-range';
-import { VacationRequest } from '../../domain/vacation-request';
-import {
-  IdempotencyKeyReusedError,
-  VacationOverlapError,
-} from '../../domain/vacation-request.errors';
-import type { VacationRequestRepository } from '../ports/vacation-request-repository';
-
-export interface CreateVacationRequestResult {
-  id: string;
-  /** False when an idempotent retry returned the request created by the original call. */
-  created: boolean;
-}
-
-export class CreateVacationRequestCommand extends Command<CreateVacationRequestResult> {
-  static readonly type = 'CreateVacationRequestCommand';
-  readonly type = CreateVacationRequestCommand.type;
-  constructor(
-    readonly actor: Principal,
-    readonly startDate: IsoDate,
-    readonly endDate: IsoDate,
-    readonly reason: string | null,
-    readonly idempotencyKey: string | null,
-  ) {
-    super();
-  }
-}
+import type { CommandHandler } from '../../../shared/cqrs/command-bus';
+import type { Clock } from '../../../shared/time/clock';
+import type { Transaction, UnitOfWork } from '../../../shared/cqrs/unit-of-work';
+import { ForbiddenError } from '../../../shared/errors/application-errors';
+import { DateRange } from '../domain/date-range';
+import { VacationRequest } from '../domain/vacation-request';
+import { IdempotencyKeyReusedError, VacationOverlapError } from '../domain/vacation-request.errors';
+import type { VacationRequestRepository } from '../repositories/vacation-request.repository';
+import type {
+  CreateVacationRequestCommand,
+  CreateVacationRequestResult,
+} from './create-vacation-request.command';
 
 export class CreateVacationRequestHandler implements CommandHandler<CreateVacationRequestCommand> {
   constructor(

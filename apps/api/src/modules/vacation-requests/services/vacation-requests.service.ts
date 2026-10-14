@@ -9,18 +9,18 @@ import type { Principal } from '../../../shared/security/principal';
 import { VacationRequestNotFoundError } from '../domain/vacation-request.errors';
 import type {
   VacationRequestListFilter,
-  VacationRequestReadModel,
-} from './ports/vacation-request-read-model';
+  VacationRequestReadRepository,
+} from '../repositories/vacation-request-read.repository';
 
 /**
  * Read side of vacation requests. Reads change nothing, so they are plain service methods —
  * commands, the bus and the unit of work are reserved for state changes.
  */
-export class VacationRequestQueries {
-  constructor(private readonly readModel: VacationRequestReadModel) {}
+export class VacationRequestsService {
+  constructor(private readonly requests: VacationRequestReadRepository) {}
 
   async getById(viewer: Principal, id: string): Promise<VacationRequestDto> {
-    const request = await this.readModel.getById(id);
+    const request = await this.requests.getById(id);
     this.assertVisibleTo(viewer, request);
     return request;
   }
@@ -30,20 +30,20 @@ export class VacationRequestQueries {
     viewer: Principal,
     filter: Omit<VacationRequestListFilter, 'userId'>,
   ): Promise<Page<VacationRequestDto>> {
-    return this.readModel.list({ ...filter, userId: viewer.userId });
+    return this.requests.list({ ...filter, userId: viewer.userId });
   }
 
   listAll(filter: VacationRequestListFilter): Promise<Page<VacationRequestDto>> {
-    return this.readModel.list(filter);
+    return this.requests.list(filter);
   }
 
   teamCalendar(from: IsoDate, to: IsoDate): Promise<TeamCalendarEntry[]> {
-    return this.readModel.teamCalendar(from, to);
+    return this.requests.teamCalendar(from, to);
   }
 
   async events(viewer: Principal, id: string): Promise<VacationRequestEventDto[]> {
-    this.assertVisibleTo(viewer, await this.readModel.getById(id));
-    return this.readModel.events(id);
+    this.assertVisibleTo(viewer, await this.requests.getById(id));
+    return this.requests.events(id);
   }
 
   /**

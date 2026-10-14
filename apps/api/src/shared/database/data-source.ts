@@ -3,7 +3,7 @@ import { types as pgTypes } from 'pg';
 import { DataSource } from 'typeorm';
 import { InitialSchema1760432400000 } from '../../migrations/1760432400000-InitialSchema';
 import { UserEntity } from '../../modules/users/entities/user.entity';
-import { VacationRequestEntity } from '../../modules/vacation-requests/infrastructure/vacation-request.entity';
+import { VacationRequestEntity } from '../../modules/vacation-requests/entities/vacation-request.entity';
 import { DomainEventEntity } from './domain-event.entity';
 
 // Return DATE columns exactly as stored ('YYYY-MM-DD'). The pg default builds a JS Date at local

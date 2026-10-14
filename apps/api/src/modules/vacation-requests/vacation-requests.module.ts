@@ -1,27 +1,21 @@
 import type { CoreContainer } from '../../bootstrap/container';
 import type { UserRepository } from '../users/repositories/user.repository';
-import {
-  ApproveVacationRequestCommand,
-  ApproveVacationRequestHandler,
-} from './application/commands/approve-vacation-request.command';
-import {
-  CreateVacationRequestCommand,
-  CreateVacationRequestHandler,
-} from './application/commands/create-vacation-request.command';
-import { VacationRequestDecider } from './application/commands/decide-vacation-request';
-import {
-  RejectVacationRequestCommand,
-  RejectVacationRequestHandler,
-} from './application/commands/reject-vacation-request.command';
-import { VacationRequestQueries } from './application/vacation-request-queries';
-import { TypeOrmVacationRequestReadModel } from './infrastructure/typeorm-vacation-request-read-model';
-import { TypeOrmVacationRequestRepository } from './infrastructure/typeorm-vacation-request-repository';
+import { ApproveVacationRequestCommand } from './commands/approve-vacation-request.command';
+import { ApproveVacationRequestHandler } from './commands/approve-vacation-request.handler';
+import { CreateVacationRequestCommand } from './commands/create-vacation-request.command';
+import { CreateVacationRequestHandler } from './commands/create-vacation-request.handler';
+import { VacationRequestDecider } from './commands/vacation-request-decider';
+import { RejectVacationRequestCommand } from './commands/reject-vacation-request.command';
+import { RejectVacationRequestHandler } from './commands/reject-vacation-request.handler';
+import { VacationRequestsService } from './services/vacation-requests.service';
+import { TypeOrmVacationRequestReadRepository } from './repositories/typeorm-vacation-request-read.repository';
+import { TypeOrmVacationRequestRepository } from './repositories/typeorm-vacation-request.repository';
 
-/** Registers the write side (commands) and returns the read side (queries service). */
+/** Registers the write side (command handlers) and returns the read side (VacationRequestsService). */
 export function createVacationRequestsModule(
   core: CoreContainer,
   users: UserRepository,
-): VacationRequestQueries {
+): VacationRequestsService {
   const { commandBus, unitOfWork, clock, dataSource } = core;
   const requests = new TypeOrmVacationRequestRepository();
   const decider = new VacationRequestDecider(unitOfWork, requests, users, clock);
@@ -39,5 +33,5 @@ export function createVacationRequestsModule(
     new RejectVacationRequestHandler(decider),
   );
 
-  return new VacationRequestQueries(new TypeOrmVacationRequestReadModel(dataSource));
+  return new VacationRequestsService(new TypeOrmVacationRequestReadRepository(dataSource));
 }

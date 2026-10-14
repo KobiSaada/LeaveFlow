@@ -12,9 +12,9 @@ import { DomainEventEntity } from '../../../shared/database/domain-event.entity'
 import { UserEntity } from '../../users/entities/user.entity';
 import type {
   VacationRequestListFilter,
-  VacationRequestReadModel,
-} from '../application/ports/vacation-request-read-model';
-import { VacationRequestEntity } from './vacation-request.entity';
+  VacationRequestReadRepository,
+} from './vacation-request-read.repository';
+import { VacationRequestEntity } from '../entities/vacation-request.entity';
 
 interface RequestRow {
   id: string;
@@ -50,7 +50,7 @@ function toDto(row: RequestRow): VacationRequestDto {
   };
 }
 
-export class TypeOrmVacationRequestReadModel implements VacationRequestReadModel {
+export class TypeOrmVacationRequestReadRepository implements VacationRequestReadRepository {
   constructor(private readonly dataSource: DataSource) {}
 
   /** One query with both names joined — no N+1. */
