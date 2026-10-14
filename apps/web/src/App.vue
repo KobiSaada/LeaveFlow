@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import AppShell from '@/components/AppShell.vue';
-import ToastHost from '@/components/ui/ToastHost.vue';
-import { useAuthStore } from '@/stores/auth';
+import AppShell from '@/shared/components/AppShell.vue';
+import ToastHost from '@/shared/components/ui/ToastHost.vue';
+import { useAuthStore } from '@/features/auth/auth.store';
 
 const route = useRoute();
 const auth = useAuthStore();

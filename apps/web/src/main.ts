@@ -1,10 +1,10 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import App from './App.vue';
-import { configureHttp } from './api/http';
+import { configureHttp } from './shared/api/http';
 import { router } from './router';
-import { useAuthStore } from './stores/auth';
-import { useToast } from './composables/useToast';
+import { useAuthStore } from './features/auth/auth.store';
+import { useToast } from './shared/composables/useToast';
 import './style.css';
 
 const app = createApp(App);
