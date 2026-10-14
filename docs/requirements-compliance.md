@@ -19,13 +19,14 @@ Evidence column: implementation → proof (test file or command). Run everything
 
 ## 2. Authentication
 
-| Requirement                                                  | Status | Evidence                                                                                                                                                          |
-| ------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Login endpoint                                               | ✅     | `POST /auth/login` — `apps/api/src/modules/auth/controllers/auth.controller.ts` → `apps/api/test/integration/auth.test.ts`                                        |
-| Protected routes                                             | ✅     | `apps/api/src/shared/http/endpoint.ts` (401 without a valid token) → `apps/api/test/integration/rbac.test.ts`                                                     |
-| Role-based access control, two roles (requester / validator) | ✅     | roles per route + in command handlers; web guards in `apps/web/src/router.ts` → `apps/api/test/integration/rbac.test.ts`                                          |
-| JWT (optional)                                               | ✅     | HS256, pinned algorithm, iss/aud/exp — `apps/api/src/modules/auth/services/jwt-token.service.ts` → `apps/api/src/modules/auth/services/jwt-token.service.test.ts` |
-| Pre-seeded demo users acceptable                             | ✅     | `apps/api/scripts/seed.ts` (4 users, 5 requests via commands) → `npm run db:seed`                                                                                 |
+| Requirement                                                  | Status                  | Evidence                                                                                                                                                          |
+| ------------------------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Login endpoint                                               | ✅                      | `POST /auth/login` — `apps/api/src/modules/auth/controllers/auth.controller.ts` → `apps/api/test/integration/auth.test.ts`                                        |
+| Protected routes                                             | ✅                      | `apps/api/src/shared/http/endpoint.ts` (401 without a valid token) → `apps/api/test/integration/rbac.test.ts`                                                     |
+| Role-based access control, two roles (requester / validator) | ✅                      | roles per route + in command handlers; web guards in `apps/web/src/router.ts` → `apps/api/test/integration/rbac.test.ts`                                          |
+| JWT (optional)                                               | ✅                      | HS256, pinned algorithm, iss/aud/exp — `apps/api/src/modules/auth/services/jwt-token.service.ts` → `apps/api/src/modules/auth/services/jwt-token.service.test.ts` |
+| Pre-seeded demo users acceptable                             | ✅                      | `apps/api/scripts/seed.ts` (4 users, 5 requests via commands) → `npm run db:seed`                                                                                 |
+| Registration (not required by the brief)                     | ✅ deliberately omitted | login + seeded users satisfy "simple authentication"; reasoning in README "Technical decisions"; extension tracked as FW-12 in `docs/future-work.md`              |
 
 ## 3. Requester interface
 

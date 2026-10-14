@@ -40,6 +40,7 @@ sequenceDiagram
 - Token lifetime `JWT_TTL_SECONDS` (default 8 h); no refresh tokens.
 - Roles: `REQUESTER` → `/requests`; `VALIDATOR` → `/dashboard`. Permissions matrix in [F-07](./F-07-security.md).
 - A token whose user no longer exists is not a session (`/auth/me` → 401).
+- **No self-registration.** Accounts are provisioned (seed today; an admin-only `CreateUserCommand` or SSO in production — FW-12). Self-service sign-up would have to decide a role, and letting users choose `VALIDATOR` would be privilege escalation.
 
 ## API
 

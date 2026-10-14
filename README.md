@@ -321,6 +321,7 @@ The full reasoning, with rejected alternatives, is in the spec: [`docs/specs/SPE
 - **Task-based endpoints** (`POST …/approve`) map 1:1 to commands and avoid CEF's missing `PATCH`.
 - **Shared contracts package** — one set of enums, DTOs, zod schemas and error codes for API and web.
 - **Per-tab sessions** (`sessionStorage`) — convenient for reviewing two roles at once; production would use an httpOnly cookie.
+- **No self-registration, on purpose** — the brief asks for a login endpoint and explicitly accepts pre-seeded demo users. Open sign-up would add a surface the brief does not need and raise a question it cannot answer safely: _who decides the role?_ Letting a new user pick "validator" is a privilege-escalation hole, and forcing every sign-up to "requester" still needs an approval/invite flow for managers. In a real company accounts come from HR or SSO, not self-service. The natural extension is an admin-only `CreateUserCommand` (or SSO), tracked as FW-12.
 
 ---
 
