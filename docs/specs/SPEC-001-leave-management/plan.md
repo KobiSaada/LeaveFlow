@@ -118,13 +118,13 @@ Sequential execution — no concurrent writers. Shared hot spots: `apps/api/src/
 
 | Task | Wave | Agent | Started | Completed | Status | Notes |
 |---|---|---|---|---|---|---|
-| T-001 | 1 | orchestrator | 2026-10-14 | — | in-progress | |
-| T-002 | 2 | orchestrator | — | — | not-started | |
-| T-003 | 2 | orchestrator | — | — | not-started | |
-| T-004 | 3 | orchestrator | — | — | not-started | |
-| T-005 | 4 | orchestrator | — | — | not-started | |
-| T-006 | 4 | orchestrator | — | — | not-started | |
-| T-007 | 5 | orchestrator | — | — | not-started | |
-| T-008 | 6 | orchestrator | — | — | not-started | |
-| T-009 | 6 | orchestrator | — | — | not-started | |
+| T-001 | 1 | orchestrator | 2026-10-14 | 2026-10-14 | completed | compose healthy, both DBs, btree_gist; audit highs removed via overrides |
+| T-002 | 2 | orchestrator | 2026-10-14 | 2026-10-14 | completed | 27 tests |
+| T-003 | 2 | orchestrator | 2026-10-14 | 2026-10-14 | completed | migrations up/down/up; every constraint proven by direct SQL |
+| T-004 | 3 | orchestrator | 2026-10-14 | 2026-10-14 | completed | live CEF dev server: error boundary keeps serving; found cef-gen-handlers no-op bug |
+| T-005 | 4 | orchestrator | 2026-10-14 | 2026-10-14 | completed | |
+| T-006 | 4 | orchestrator | 2026-10-14 | 2026-10-14 | completed | seed via CommandBus |
+| T-007 | 5 | orchestrator | 2026-10-14 | 2026-10-14 | completed | live smoke of every endpoint |
+| T-008 | 6 | orchestrator | 2026-10-14 | 2026-10-14 | completed | 148 tests; exposed deadlock + event-order defects, fixed (epic v0.3) |
+| T-009 | 6 | orchestrator | 2026-10-14 | — | in-progress | |
 | T-010 | 7 | orchestrator | — | — | not-started | |
