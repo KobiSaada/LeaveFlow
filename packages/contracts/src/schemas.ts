@@ -36,7 +36,8 @@ export const loginRequestSchema = z.object({
 export type LoginRequest = z.input<typeof loginRequestSchema>;
 
 /**
- * Shape-only validation. Business rules (end strictly after start, no past start, no overlap)
+ * Shape-only validation. Business rules (end — the first day back — strictly after start, no past
+ * start, no overlap)
  * belong to the domain so they produce their own error codes.
  */
 export const createVacationRequestSchema = z.object({

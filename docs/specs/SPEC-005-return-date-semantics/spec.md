@@ -7,7 +7,7 @@
 | ID | SPEC-005 |
 | Title | End date is the return-to-work date (half-open ranges) |
 | Track | small-spec |
-| Status | approved |
+| Status | `done` |
 | Compliance critical | `false` |
 | Created | 2026-10-14 |
 | Owner | Kobi Saada |

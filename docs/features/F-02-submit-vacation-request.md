@@ -35,13 +35,13 @@ sequenceDiagram
 
 ## Rules
 
-| #    | Rule                                                                                          | Where enforced                                  |
-| ---- | --------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| BR-1 | End date strictly after start date (single-day leave impossible — deliberate literal reading) | `DateRange.of`, `CHECK (end_date > start_date)` |
-| BR-2 | No overlap with the user's own PENDING/APPROVED requests; inclusive ranges                    | handler pre-check, `EXCLUDE USING gist`         |
-| BR-4 | Start date ≥ today in `BUSINESS_TIMEZONE`                                                     | aggregate + injected `Clock`                    |
-| BR-6 | Only requesters submit                                                                        | controller role + handler check                 |
-| —    | Reason optional, trimmed, ≤ 500 chars                                                         | zod schema                                      |
+| #    | Rule                                                                                                 | Where enforced                                  |
+| ---- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| BR-1 | End date (= first day back at work) strictly after the start date — 2 Nov → 3 Nov is one day off     | `DateRange.of`, `CHECK (end_date > start_date)` |
+| BR-2 | No shared day off with the user's own PENDING/APPROVED requests; ranges are half-open `[start, end)` | handler pre-check, `EXCLUDE USING gist`         |
+| BR-4 | Start date ≥ today in `BUSINESS_TIMEZONE`                                                            | aggregate + injected `Clock`                    |
+| BR-6 | Only requesters submit                                                                               | controller role + handler check                 |
+| —    | Reason optional, trimmed, ≤ 500 chars                                                                | zod schema                                      |
 
 ## API
 

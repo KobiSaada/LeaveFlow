@@ -33,7 +33,7 @@ Authenticated users only; projection excludes free text.
 
 ## Edge cases
 
-Vacation spanning two months is clipped to the visible month; empty month → empty state; dates rendered from `YYYY-MM-DD` without time-zone shifts.
+Bars end the day before the return date (the end date is the first day back); a vacation spanning two months is clipped to the visible month; empty month → empty state; dates rendered from `YYYY-MM-DD` without time-zone shifts.
 
 ## Acceptance criteria → tests
 

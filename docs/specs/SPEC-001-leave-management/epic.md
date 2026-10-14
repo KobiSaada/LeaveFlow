@@ -10,7 +10,7 @@
 | Title | LeaveFlow — Vacation Request Management |
 | Status | `done` |
 | Brownfield | no — greenfield repository |
-| Version | 0.4 |
+| Version | 0.5 |
 | Owner | Kobi Saada |
 | Contributors | Claude (AI pair, permitted by the assignment) |
 | Created | 2026-10-14 |
@@ -54,7 +54,7 @@ LeaveFlow is a small web application in which employees (**Requesters**) submit 
   - Deliverables: public/private GitHub or Bitbucket repo, README (install, run, DB setup, technical decisions, known limitations), meaningful commits.
   - Process: email the recruiter on start and on completion (human task, not code).
 - **Decisions made by the owner during analysis (2026-10-14):**
-  - **D-1** Business rule 1 is implemented **literally**: `end_date` must be strictly after `start_date`. Consequence: a single-day vacation is impossible; documented in the README as a conscious reading of the brief.
+  - **D-1** Business rule 1 is implemented **literally**: `end_date` must be strictly after `start_date`. ~~Consequence: a single-day vacation is impossible.~~ **Superseded by SPEC-005 (v0.5):** the end date is the first day back at work, so ranges are half-open and a single day off is possible.
   - **D-2** Team planning shows **approved and pending** requests (pending visually distinguished), never reason or comments.
   - **D-3** Only Requesters submit requests; Validators only decide. Self-approval is therefore structurally impossible.
   - **D-4** Test scope: domain unit tests + API integration tests against a real PostgreSQL.
@@ -902,6 +902,7 @@ Every task in this spec is held to the universal verification-rigour rules in `S
 | Date | Version | What changed (sections) | Tasks invalidated | Reason | Approved by |
 |---|---|---|---|---|---|
 | 2026-10-14 | 0.1 | initial draft | — | — | — |
+| 2026-10-14 | 0.5 | §4 D-1, §8 FR-15/FR-16, §10 exclusion constraint: end date = first day back at work, half-open ranges `[start, end)`; back-to-back requests allowed | none (post-completion change, see SPEC-005) | owner: 2 Nov → 3 Nov is one day off | Kobi |
 | 2026-10-14 | 0.4 | §8.7 FR-26 reads: named query classes on a QueryBus replaced by read services; §11.3 transient-error retry removed (dead after the advisory lock); HTTP adapters renamed to controllers | none (post-completion refactor, behaviour unchanged) | KISS/YAGNI review — see SPEC-002 | Kobi |
 | 2026-10-14 | 0.3 | §10.1 `domain_events.seq` identity column + index on (aggregate_id, seq); §11.3 per-user advisory lock and transient-error retry | T-003 (migration amended pre-release), T-006 | integration race tests exposed event-order ties under a fixed clock and exclusion-constraint deadlocks returning 500 | Kobi (via approved execution) |
 | 2026-10-14 | 0.2 | §1 status approved → in-progress; §11.2/§20/§23.2 Node floor 22 → 20.19 (reviewer machines; Vite 7 floor); Postgres host port 5544 (5432 commonly occupied) | none (pre-decomposition) | environment check before T-001 | Kobi |
