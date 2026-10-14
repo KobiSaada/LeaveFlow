@@ -10,7 +10,7 @@ import BaseButton from '@/shared/components/ui/BaseButton.vue';
 import BaseTextarea from '@/shared/components/ui/BaseTextarea.vue';
 import DateRangeFields from '@/features/my-requests/components/DateRangeFields.vue';
 import { useToast } from '@/shared/composables/useToast';
-import { dayCount, formatRange, todayLocal } from '@/shared/utils/dates';
+import { formatDaysOff, formatVacation, todayLocal } from '@/shared/utils/dates';
 import { describeError } from '@/shared/utils/errors';
 
 const router = useRouter();
@@ -53,7 +53,7 @@ const shown = computed(() => ({
 
 const summary = computed(() =>
   !clientErrors.value.startDate && !clientErrors.value.endDate
-    ? `${formatRange(form.startDate, form.endDate)} · ${dayCount(form.startDate, form.endDate)} days`
+    ? `${formatVacation(form.startDate, form.endDate)} · ${formatDaysOff(form.startDate, form.endDate)}`
     : null,
 );
 
@@ -138,7 +138,7 @@ async function submit(): Promise<void> {
             <RouterLink to="/team" class="font-medium text-indigo-700 hover:underline"
               >team planning</RouterLink
             >
-            to avoid overlapping with colleagues. The end date must be after the start date.
+            to avoid overlapping with colleagues.
           </span>
         </p>
       </div>

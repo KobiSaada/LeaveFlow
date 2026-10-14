@@ -21,7 +21,7 @@ import LoadingState from '@/shared/components/ui/LoadingState.vue';
 import PaginationControls from '@/shared/components/ui/PaginationControls.vue';
 import StatusBadge from '@/shared/components/ui/StatusBadge.vue';
 import { useToast } from '@/shared/composables/useToast';
-import { dayCount, formatRange, formatTimestamp } from '@/shared/utils/dates';
+import { formatDaysOff, formatTimestamp, formatVacation } from '@/shared/utils/dates';
 import { describeError } from '@/shared/utils/errors';
 import { type Decision, useApprovalsStore } from '../approvals.store';
 import DecisionDialog from '../components/DecisionDialog.vue';
@@ -170,11 +170,11 @@ const columns: Column[] = [
         </template>
         <template #cell-dates="{ row }">
           <span class="font-medium text-slate-900">{{
-            formatRange(row.startDate, row.endDate)
+            formatVacation(row.startDate, row.endDate)
           }}</span>
-          <span class="block text-xs text-slate-500"
-            >{{ dayCount(row.startDate, row.endDate) }} days</span
-          >
+          <span class="block text-xs text-slate-500">{{
+            formatDaysOff(row.startDate, row.endDate)
+          }}</span>
         </template>
         <template #cell-reason="{ row }">
           <span :class="row.reason ? 'text-slate-700' : 'text-slate-400'">{{
@@ -232,7 +232,7 @@ const columns: Column[] = [
       :mode="dialog?.mode ?? 'approve'"
       :summary="
         dialog
-          ? `${dialog.request.userName} · ${formatRange(dialog.request.startDate, dialog.request.endDate)}`
+          ? `${dialog.request.userName} · ${formatVacation(dialog.request.startDate, dialog.request.endDate)}`
           : ''
       "
       :busy="deciding"

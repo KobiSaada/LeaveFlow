@@ -1,6 +1,6 @@
 import type { VacationRequestStatus } from '@leaveflow/contracts';
 import type { ApiError } from '@/shared/api/http';
-import { formatRange } from './dates';
+import { formatVacation } from './dates';
 
 /** User-facing copy for API errors (epic §9.3). */
 export function describeError(error: ApiError): string {
@@ -9,7 +9,7 @@ export function describeError(error: ApiError): string {
     case 'VACATION_OVERLAP': {
       const range = problem?.conflictingRange as { startDate: string; endDate: string } | undefined;
       return range
-        ? `These dates overlap another active request of yours (${formatRange(range.startDate, range.endDate)}).`
+        ? `These dates overlap another active request of yours (${formatVacation(range.startDate, range.endDate)}).`
         : 'These dates overlap another active request of yours.';
     }
     case 'REQUEST_NOT_PENDING': {

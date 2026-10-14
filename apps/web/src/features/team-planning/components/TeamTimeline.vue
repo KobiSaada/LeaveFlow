@@ -3,7 +3,8 @@ import { compareIsoDates, type IsoDate, type TeamCalendarEntry } from '@leaveflo
 import { CircleCheck, Clock3 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import UserAvatar from '@/shared/components/ui/UserAvatar.vue';
-import { formatRange, isWeekend, weekdayInitial } from '@/shared/utils/dates';
+import { addDays } from '@leaveflow/contracts';
+import { formatVacation, isWeekend, weekdayInitial } from '@/shared/utils/dates';
 import type { TeamRow } from '../team-planning.store';
 
 /** Month grid: one row per person, one column per day, a bar per vacation clipped to the month. */
@@ -20,8 +21,10 @@ const columns = computed(() => ({
 
 function barStyle(entry: TeamCalendarEntry): Record<string, string> {
   const { from, to, days } = props.bounds;
+  // The end date is the first day back at work, so the bar stops the day before (SPEC-005).
+  const lastDayOff = addDays(entry.endDate, -1);
   const start = compareIsoDates(entry.startDate, from) < 0 ? from : entry.startDate;
-  const end = compareIsoDates(entry.endDate, to) > 0 ? to : entry.endDate;
+  const end = compareIsoDates(lastDayOff, to) > 0 ? to : lastDayOff;
   return { gridColumn: `${days.indexOf(start) + 1} / ${days.indexOf(end) + 2}` };
 }
 </script>
@@ -85,10 +88,10 @@ function barStyle(entry: TeamCalendarEntry): Record<string, string> {
                   : 'border border-dashed border-amber-400 bg-amber-50 text-amber-800'
               "
               :style="{ ...barStyle(entry), gridRow: '1' }"
-              :title="`${row.userName}: ${formatRange(entry.startDate, entry.endDate)} (${entry.status.toLowerCase()})`"
+              :title="`${row.userName}: ${formatVacation(entry.startDate, entry.endDate)} (${entry.status.toLowerCase()})`"
             >
               <span class="sr-only"
-                >{{ formatRange(entry.startDate, entry.endDate) }},
+                >{{ formatVacation(entry.startDate, entry.endDate) }},
                 {{ entry.status === 'APPROVED' ? 'approved' : 'pending' }}</span
               >
               <component
@@ -97,7 +100,7 @@ function barStyle(entry: TeamCalendarEntry): Record<string, string> {
                 aria-hidden="true"
               />
               <span class="truncate" aria-hidden="true">{{
-                formatRange(entry.startDate, entry.endDate)
+                formatVacation(entry.startDate, entry.endDate)
               }}</span>
             </div>
           </div>

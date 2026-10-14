@@ -2,8 +2,8 @@
 import { COMMENT_MAX_LENGTH } from '@leaveflow/contracts';
 import { CircleCheck, CircleX } from 'lucide-vue-next';
 import { computed, nextTick, ref, useId, watch } from 'vue';
-import BaseButton from '../../../shared/components/ui/BaseButton.vue';
-import BaseTextarea from '../../../shared/components/ui/BaseTextarea.vue';
+import BaseButton from '@/shared/components/ui/BaseButton.vue';
+import BaseTextarea from '@/shared/components/ui/BaseTextarea.vue';
 
 const props = defineProps<{
   open: boolean;

@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { dayCount, formatDate, formatRange, monthBounds, shiftMonth } from './dates';
+import {
+  daysOff,
+  formatDate,
+  formatDaysOff,
+  formatRange,
+  formatVacation,
+  monthBounds,
+  shiftMonth,
+} from './dates';
 
 const originalTz = process.env.TZ;
 afterEach(() => {
@@ -20,8 +28,12 @@ describe('date display (no time-zone shift)', () => {
     expect(formatRange('2026-11-09', '2026-11-13')).toBe('9 Nov – 13 Nov 2026');
   });
 
-  it('counts days inclusively', () => {
-    expect(dayCount('2026-11-09', '2026-11-13')).toBe(5);
+  it('treats the end date as the first day back at work (SPEC-005)', () => {
+    expect(daysOff('2026-11-02', '2026-11-03')).toBe(1);
+    expect(formatVacation('2026-11-02', '2026-11-03')).toBe('2 Nov 2026');
+    expect(formatVacation('2026-11-09', '2026-11-13')).toBe('9 Nov – 12 Nov 2026');
+    expect(formatDaysOff('2026-11-09', '2026-11-13')).toBe('4 days off · back 13 Nov');
+    expect(formatDaysOff('2026-11-02', '2026-11-03')).toBe('1 day off · back 3 Nov');
   });
 
   it('computes month bounds, including leap February', () => {

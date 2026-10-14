@@ -44,9 +44,24 @@ export function formatRange(start: IsoDate, end: IsoDate): string {
   return `${formatDate(start)} – ${formatDate(end)}`;
 }
 
-/** Inclusive number of calendar days. */
-export function dayCount(start: IsoDate, end: IsoDate): number {
-  return daysBetween(start, end) + 1;
+/**
+ * A vacation is the half-open range [start, end): `end` is the first day back at work (SPEC-005).
+ * 2 Nov → 3 Nov is one day off.
+ */
+export function daysOff(start: IsoDate, end: IsoDate): number {
+  return daysBetween(start, end);
+}
+
+/** Days off as people read them: `2 Nov 2026`, or `9 Nov – 12 Nov 2026` (the last day off). */
+export function formatVacation(start: IsoDate, end: IsoDate): string {
+  const lastDayOff = addDays(end, -1);
+  return lastDayOff === start ? formatDate(start) : formatRange(start, lastDayOff);
+}
+
+/** `4 days off · back 13 Nov` */
+export function formatDaysOff(start: IsoDate, end: IsoDate): string {
+  const days = daysOff(start, end);
+  return `${days} ${days === 1 ? 'day' : 'days'} off · back ${dayMonth.format(utc(end))}`;
 }
 
 export function formatTimestamp(iso: string): string {

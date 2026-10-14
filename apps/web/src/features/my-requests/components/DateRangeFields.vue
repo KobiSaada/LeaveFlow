@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import BaseInput from '../../../shared/components/ui/BaseInput.vue';
+import { addDays, isValidIsoDate } from '@leaveflow/contracts';
+import { computed } from 'vue';
+import BaseInput from '@/shared/components/ui/BaseInput.vue';
 
-defineProps<{ min?: string; startError?: string; endError?: string }>();
+const props = defineProps<{ min?: string; startError?: string; endError?: string }>();
 const start = defineModel<string>('start', { default: '' });
 const end = defineModel<string>('end', { default: '' });
+
+// The end date is the return date, so the earliest valid one is the day after the start.
+const earliestEnd = computed(() =>
+  isValidIsoDate(start.value) ? addDays(start.value, 1) : props.min,
+);
 </script>
 
 <template>
@@ -12,6 +19,7 @@ const end = defineModel<string>('end', { default: '' });
     <BaseInput
       v-model="start"
       label="Start date"
+      hint="Your first day off."
       type="date"
       required
       :min="min"
@@ -22,9 +30,9 @@ const end = defineModel<string>('end', { default: '' });
       label="End date"
       type="date"
       required
-      :min="start || min"
+      :min="earliestEnd"
       :error="endError"
-      hint="Must be after the start date."
+      hint="Your first day back at work — 2 Nov → 3 Nov is one day off."
     />
   </fieldset>
 </template>
