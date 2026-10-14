@@ -3,7 +3,7 @@ import { compareIsoDates, isValidIsoDate, REASON_MAX_LENGTH } from '@leaveflow/c
 import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toApiError } from '@/shared/api/http';
-import { myRequestsApi } from '../my-requests.api';
+import { useMyRequestsStore } from '../my-requests.store';
 import BaseButton from '@/shared/components/ui/BaseButton.vue';
 import BaseTextarea from '@/shared/components/ui/BaseTextarea.vue';
 import DateRangeFields from '@/features/my-requests/components/DateRangeFields.vue';
@@ -12,6 +12,7 @@ import { dayCount, formatRange, todayLocal } from '@/shared/utils/dates';
 import { describeError } from '@/shared/utils/errors';
 
 const router = useRouter();
+const store = useMyRequestsStore();
 const toast = useToast();
 const today = todayLocal();
 
@@ -22,10 +23,7 @@ const serverErrors = reactive<{
   reason?: string;
   form?: string;
 }>({});
-const submitting = ref(false);
 const touched = ref(false);
-// One key per form session: a retry after a lost response replays instead of conflicting.
-let idempotencyKey = crypto.randomUUID();
 
 /** Instant feedback mirroring the server rules; the server remains the authority. */
 const clientErrors = computed(() => {
@@ -66,31 +64,19 @@ async function submit(): Promise<void> {
   touched.value = true;
   clearServerErrors();
   if (clientErrors.value.startDate || clientErrors.value.endDate) return;
-  submitting.value = true;
   try {
-    await myRequestsApi.create(
-      { startDate: form.startDate, endDate: form.endDate, reason: form.reason },
-      idempotencyKey,
-    );
-    idempotencyKey = crypto.randomUUID();
+    await store.submit({ startDate: form.startDate, endDate: form.endDate, reason: form.reason });
     toast.show('Request submitted.');
     await router.push('/requests');
   } catch (e) {
+    // Map the server's answer onto the form (the store already handled the idempotency key).
     const error = toApiError(e);
-    if (error.code === 'NETWORK_ERROR') {
-      // Keep the same key: resubmitting after a lost response must not create a duplicate.
-      serverErrors.form = error.message;
-    } else {
-      idempotencyKey = crypto.randomUUID();
-      const message = describeError(error);
-      if (error.code === 'START_DATE_IN_PAST') serverErrors.startDate = message;
-      else if (error.code === 'INVALID_DATE_RANGE' || error.code === 'VACATION_OVERLAP')
-        serverErrors.endDate = message;
-      else if (error.code === 'VALIDATION_FAILED') Object.assign(serverErrors, error.fieldErrors);
-      else serverErrors.form = message;
-    }
-  } finally {
-    submitting.value = false;
+    const message = describeError(error);
+    if (error.code === 'START_DATE_IN_PAST') serverErrors.startDate = message;
+    else if (error.code === 'INVALID_DATE_RANGE' || error.code === 'VACATION_OVERLAP')
+      serverErrors.endDate = message;
+    else if (error.code === 'VALIDATION_FAILED') Object.assign(serverErrors, error.fieldErrors);
+    else serverErrors.form = message;
   }
 }
 </script>
@@ -131,7 +117,7 @@ async function submit(): Promise<void> {
       />
       <div class="flex justify-end gap-2">
         <RouterLink to="/requests"><BaseButton variant="secondary">Cancel</BaseButton></RouterLink>
-        <BaseButton type="submit" :loading="submitting">Submit request</BaseButton>
+        <BaseButton type="submit" :loading="store.submitting">Submit request</BaseButton>
       </div>
     </form>
   </section>

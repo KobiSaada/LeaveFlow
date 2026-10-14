@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { VacationRequestDto } from '@leaveflow/contracts';
-import { reactive, ref } from 'vue';
-import { myRequestsApi } from '../my-requests.api';
+import { storeToRefs } from 'pinia';
+import { onMounted, ref } from 'vue';
+import DecisionInfo from '@/features/vacation-requests/components/DecisionInfo.vue';
+import RequestHistory from '@/features/vacation-requests/components/RequestHistory.vue';
 import BaseButton from '@/shared/components/ui/BaseButton.vue';
 import DataTable, { type Column } from '@/shared/components/ui/DataTable.vue';
 import EmptyState from '@/shared/components/ui/EmptyState.vue';
@@ -9,20 +10,14 @@ import ErrorState from '@/shared/components/ui/ErrorState.vue';
 import LoadingState from '@/shared/components/ui/LoadingState.vue';
 import PaginationControls from '@/shared/components/ui/PaginationControls.vue';
 import StatusBadge from '@/shared/components/ui/StatusBadge.vue';
-import DecisionInfo from '@/features/vacation-requests/components/DecisionInfo.vue';
-import RequestHistory from '@/features/vacation-requests/components/RequestHistory.vue';
-import { usePaginatedQuery } from '@/shared/composables/usePaginatedQuery';
 import { dayCount, formatRange, formatTimestamp } from '@/shared/utils/dates';
 import { describeError } from '@/shared/utils/errors';
+import { useMyRequestsStore } from '../my-requests.store';
 
-const params = reactive({ page: 1, pageSize: 10 });
-const { items, pageInfo, loading, error, reload } = usePaginatedQuery<
-  VacationRequestDto,
-  typeof params
->(
-  () => ({ ...params }),
-  (p) => myRequestsApi.list(p),
-);
+const store = useMyRequestsStore();
+const { items, pageInfo, loading, error } = storeToRefs(store);
+onMounted(() => store.load());
+
 const openHistory = ref<string | null>(null);
 
 const columns: Column[] = [
@@ -45,7 +40,7 @@ const columns: Column[] = [
     </div>
 
     <LoadingState v-if="loading && !pageInfo" />
-    <ErrorState v-else-if="error" :message="describeError(error)" @retry="reload" />
+    <ErrorState v-else-if="error" :message="describeError(error)" @retry="store.load()" />
     <EmptyState
       v-else-if="items.length === 0"
       title="No vacation requests yet."
@@ -90,7 +85,7 @@ const columns: Column[] = [
         v-if="pageInfo"
         :page-info="pageInfo"
         :disabled="loading"
-        @update:page="params.page = $event"
+        @update:page="store.load($event)"
       />
     </template>
   </section>

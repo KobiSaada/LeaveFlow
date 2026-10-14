@@ -1,33 +1,33 @@
 <script setup lang="ts">
 import {
-  type PublicUser,
   VACATION_REQUEST_STATUSES,
   type VacationRequestDto,
   type VacationRequestStatus,
 } from '@leaveflow/contracts';
-import { computed, onMounted, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { toApiError } from '@/shared/api/http';
-import { approvalsApi } from '../approvals.api';
+import DecisionInfo from '@/features/vacation-requests/components/DecisionInfo.vue';
+import RequestHistory from '@/features/vacation-requests/components/RequestHistory.vue';
 import BaseButton from '@/shared/components/ui/BaseButton.vue';
 import BaseSelect from '@/shared/components/ui/BaseSelect.vue';
 import DataTable, { type Column } from '@/shared/components/ui/DataTable.vue';
-import DecisionDialog from '@/features/approvals/components/DecisionDialog.vue';
 import EmptyState from '@/shared/components/ui/EmptyState.vue';
 import ErrorState from '@/shared/components/ui/ErrorState.vue';
 import LoadingState from '@/shared/components/ui/LoadingState.vue';
 import PaginationControls from '@/shared/components/ui/PaginationControls.vue';
 import StatusBadge from '@/shared/components/ui/StatusBadge.vue';
-import DecisionInfo from '@/features/vacation-requests/components/DecisionInfo.vue';
-import RequestHistory from '@/features/vacation-requests/components/RequestHistory.vue';
-import { usePaginatedQuery } from '@/shared/composables/usePaginatedQuery';
 import { useToast } from '@/shared/composables/useToast';
 import { dayCount, formatRange, formatTimestamp } from '@/shared/utils/dates';
 import { describeError } from '@/shared/utils/errors';
+import { type Decision, useApprovalsStore } from '../approvals.store';
+import DecisionDialog from '../components/DecisionDialog.vue';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const store = useApprovalsStore();
+const { items, pageInfo, loading, error, requesters, deciding } = storeToRefs(store);
 
 // Filters and page live in the URL: refresh, back/forward and shared links keep the view.
 const ALL = 'ALL';
@@ -43,25 +43,18 @@ function setQuery(patch: Record<string, string | undefined>): void {
   void router.replace({ query: { ...route.query, ...patch } });
 }
 
-const params = computed(() => ({
-  page: page.value,
-  pageSize: 10,
-  status: status.value === ALL ? undefined : status.value,
-  userId: userId.value || undefined,
-}));
-const { items, pageInfo, loading, error, reload } = usePaginatedQuery<
-  VacationRequestDto,
-  typeof params.value
->(params, (p) => approvalsApi.list(p));
-
-const requesters = ref<PublicUser[]>([]);
-onMounted(async () => {
-  try {
-    requesters.value = await approvalsApi.listRequesters();
-  } catch {
-    // The filter degrades to "All employees"; the list itself still works.
-  }
-});
+watch(
+  [status, userId, page],
+  () =>
+    store.load({
+      page: page.value,
+      pageSize: 10,
+      status: status.value === ALL ? undefined : status.value,
+      userId: userId.value || undefined,
+    }),
+  { immediate: true },
+);
+onMounted(() => store.loadRequesters());
 
 const statusOptions = [
   { value: 'PENDING', label: 'Pending' },
@@ -74,30 +67,20 @@ const employeeOptions = computed(() => [
   ...requesters.value.map((u) => ({ value: u.id, label: u.name })),
 ]);
 
-const dialog = ref<{ mode: 'approve' | 'reject'; request: VacationRequestDto } | null>(null);
-const deciding = ref(false);
+const dialog = ref<{ mode: Decision; request: VacationRequestDto } | null>(null);
 const openHistory = ref<string | null>(null);
 
 async function decide(comment: string | null): Promise<void> {
   if (!dialog.value) return;
   const { mode, request } = dialog.value;
-  deciding.value = true;
-  try {
-    if (mode === 'approve') await approvalsApi.approve(request.id, comment);
-    else await approvalsApi.reject(request.id, comment ?? '');
-    toast.show(
-      `Request ${mode === 'approve' ? 'approved' : 'rejected'}: ${request.userName}, ${formatRange(request.startDate, request.endDate)}.`,
-    );
-  } catch (e) {
-    const apiError = toApiError(e);
-    toast.show(describeError(apiError), apiError.code === 'REQUEST_NOT_PENDING' ? 'info' : 'error');
-  } finally {
-    deciding.value = false;
-    dialog.value = null;
-    await reload();
-    // The decided row may have been the last one on this page (e.g. under the Pending filter).
-    if (items.value.length === 0 && page.value > 1) setQuery({ page: String(page.value - 1) });
-  }
+  const outcome = await store.decide(mode, request, comment);
+  dialog.value = null;
+  toast.show(
+    outcome.message,
+    outcome.kind === 'success' ? 'success' : outcome.kind === 'conflict' ? 'info' : 'error',
+  );
+  // The decided row may have been the last one on this page (e.g. under the Pending filter).
+  if (items.value.length === 0 && page.value > 1) setQuery({ page: String(page.value - 1) });
 }
 
 const columns: Column[] = [
@@ -138,7 +121,7 @@ const columns: Column[] = [
     </div>
 
     <LoadingState v-if="loading && !pageInfo" />
-    <ErrorState v-else-if="error" :message="describeError(error)" @retry="reload" />
+    <ErrorState v-else-if="error" :message="describeError(error)" @retry="store.reload()" />
     <EmptyState v-else-if="items.length === 0" title="No requests match these filters.">
       <BaseButton variant="secondary" @click="router.replace({ query: {} })"
         >Clear filters</BaseButton
