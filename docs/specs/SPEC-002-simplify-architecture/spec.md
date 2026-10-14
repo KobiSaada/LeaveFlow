@@ -7,7 +7,7 @@
 | ID | SPEC-002 |
 | Title | Simplify the architecture: commands for writes, services for reads |
 | Track | small-spec |
-| Status | approved |
+| Status | `done` |
 | Compliance critical | `false` |
 | Created | 2026-10-14 |
 | Last updated | 2026-10-14 |
