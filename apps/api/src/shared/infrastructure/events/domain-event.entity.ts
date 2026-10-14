@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import type { EventPayload } from '../../domain/domain-event';
 
 /** Insert-only record of every domain event (outbox-lite + audit trail). */
 @Entity({ name: 'domain_events' })
@@ -16,7 +17,7 @@ export class DomainEventEntity {
   eventType: string;
 
   @Column({ type: 'jsonb' })
-  payload: Record<string, unknown>;
+  payload: EventPayload;
 
   @Column({ type: 'uuid', name: 'actor_id' })
   actorId: string;

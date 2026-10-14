@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: LeaveFlow API
+  version: 1.0.0
+  description: |
+    Vacation request management. Routing is declared here for commoneventframework:
+    `x-handler` / `x-inputParser` reference `file#export` under `src/`.
+    Every failure is `application/problem+json` with a stable `code` and the `requestId`.
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /health:
+    get:
+      summary: Liveness and database connectivity
+      tags: [System]
+      x-handler: modules/health/http/health.http#getHealthHandler
+      x-inputParser: modules/health/http/health.http#getHealthParser
+      responses:
+        '200':
+          description: Healthy
