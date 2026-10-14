@@ -6,7 +6,7 @@
 |---|---|
 | Parent epic | [SPEC-001: LeaveFlow — Vacation Request Management](./epic.md) |
 | Tasks source | [tasks.md](./tasks.md) |
-| Status | `in-progress` |
+| Status | `completed` |
 | Created | 2026-10-14 |
 | Last updated | 2026-10-14 |
 
@@ -126,5 +126,5 @@ Sequential execution — no concurrent writers. Shared hot spots: `apps/api/src/
 | T-006 | 4 | orchestrator | 2026-10-14 | 2026-10-14 | completed | seed via CommandBus |
 | T-007 | 5 | orchestrator | 2026-10-14 | 2026-10-14 | completed | live smoke of every endpoint |
 | T-008 | 6 | orchestrator | 2026-10-14 | 2026-10-14 | completed | 148 tests; exposed deadlock + event-order defects, fixed (epic v0.3) |
-| T-009 | 6 | orchestrator | 2026-10-14 | — | in-progress | |
-| T-010 | 7 | orchestrator | — | — | not-started | |
+| T-009 | 6 | orchestrator | 2026-10-14 | 2026-10-14 | completed | browser walkthrough both roles, race toast, 390px, no console errors; 20 tests |
+| T-010 | 7 | orchestrator | 2026-10-14 | 2026-10-14 | completed | fresh clone: install → setup → 195 tests → dev + proxy login; cef-build bundle run and probed |

@@ -8,7 +8,7 @@
 |---|---|
 | Spec ID | SPEC-001 |
 | Title | LeaveFlow — Vacation Request Management |
-| Status | `in-progress` |
+| Status | `done` |
 | Brownfield | no — greenfield repository |
 | Version | 0.3 |
 | Owner | Kobi Saada |
@@ -502,10 +502,10 @@ Dependency rule: `domain` imports nothing outside itself and `shared/domain`; `a
 
 | Doc | Why this epic touches it | Updated |
 |---|---|---|
-| `README.md` | the assignment's required README (FR-36) | [ ] |
+| `README.md` | the assignment's required README (FR-36) | [x] |
 | `docs/workflow.md` | already present (SDD process); referenced from README | [x] |
-| `docs/future-work.md` | every §21 item intended for later | [ ] |
-| `CLAUDE.md` | stack conventions once scaffolded | [ ] |
+| `docs/future-work.md` | every §21 item intended for later | [x] |
+| `CLAUDE.md` | stack conventions once scaffolded | [x] |
 
 ---
 
@@ -857,7 +857,7 @@ Every task in this spec is held to the universal verification-rigour rules in `S
 | Q3 | Can validators submit? | Kobi | answered | No (D-3). |
 | Q4 | Test scope? | Kobi | answered | Domain unit + API integration on real Postgres (D-4). |
 | Q5 | May a validator approve a pending request whose start date has passed while it waited? | Kobi | answered (assumption) | Yes — BR-4 governs submission only; documented. |
-| Q6 | Is FR-34 (history timeline) in scope? | Kobi | open | Default: implement only if time allows after all MUSTs. |
+| Q6 | Is FR-34 (history timeline) in scope? | Kobi | answered | Implemented (API + "History" in both UIs) after all MUSTs were green. |
 
 ---
 
