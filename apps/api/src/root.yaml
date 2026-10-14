@@ -67,3 +67,147 @@ paths:
       responses:
         '200': { description: Users ordered by name (max 500) }
         '403': { description: FORBIDDEN — validators only }
+  /vacation-requests:
+    post:
+      summary: Submit a vacation request (CreateVacationRequestCommand)
+      tags: [Vacation requests]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#createVacationRequestHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#createVacationRequestParser
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          description: Client-generated UUID. Retrying with the same key and payload returns the original request (200).
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [startDate, endDate]
+              properties:
+                startDate: { type: string, format: date, example: '2026-11-09' }
+                endDate:
+                  {
+                    type: string,
+                    format: date,
+                    example: '2026-11-13',
+                    description: Strictly after startDate,
+                  }
+                reason: { type: string, maxLength: 500, nullable: true }
+      responses:
+        '201': { description: Created (status PENDING) }
+        '200': { description: Idempotent replay of an earlier identical request }
+        '403': { description: FORBIDDEN — requesters only }
+        '409': { description: VACATION_OVERLAP | IDEMPOTENCY_KEY_REUSED }
+        '422': { description: VALIDATION_FAILED | INVALID_DATE_RANGE | START_DATE_IN_PAST }
+    get:
+      summary: List all requests (ListVacationRequestsQuery)
+      tags: [Vacation requests]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#listVacationRequestsHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#listVacationRequestsParser
+      parameters:
+        - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
+        - {
+            in: query,
+            name: pageSize,
+            schema: { type: integer, minimum: 1, maximum: 100, default: 20 },
+          }
+        - { in: query, name: status, schema: { type: string, enum: [PENDING, APPROVED, REJECTED] } }
+        - { in: query, name: userId, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: 'Page of requests, newest first: { items, pageInfo }' }
+        '403': { description: FORBIDDEN — validators only }
+  /me/vacation-requests:
+    get:
+      summary: The caller's own requests (ListMyVacationRequestsQuery)
+      tags: [Vacation requests]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#listMyVacationRequestsHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#listMyVacationRequestsParser
+      parameters:
+        - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
+        - {
+            in: query,
+            name: pageSize,
+            schema: { type: integer, minimum: 1, maximum: 100, default: 20 },
+          }
+        - { in: query, name: status, schema: { type: string, enum: [PENDING, APPROVED, REJECTED] } }
+      responses:
+        '200': { description: 'Page of requests, newest first: { items, pageInfo }' }
+  /vacation-requests/:id/approve:
+    post:
+      summary: Approve a pending request (ApproveVacationRequestCommand)
+      tags: [Vacation requests]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#approveVacationRequestHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#approveVacationRequestParser
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment: { type: string, maxLength: 1000, nullable: true }
+      responses:
+        '200': { description: Approved (or already approved — idempotent) }
+        '404': { description: NOT_FOUND }
+        '409': { description: REQUEST_NOT_PENDING — already rejected }
+  /vacation-requests/:id/reject:
+    post:
+      summary: Reject a pending request with a required comment (RejectVacationRequestCommand)
+      tags: [Vacation requests]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#rejectVacationRequestHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#rejectVacationRequestParser
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [comment]
+              properties:
+                comment: { type: string, minLength: 1, maxLength: 1000 }
+      responses:
+        '200': { description: Rejected (or already rejected — idempotent) }
+        '404': { description: NOT_FOUND }
+        '409': { description: REQUEST_NOT_PENDING — already approved }
+        '422': { description: REJECTION_COMMENT_REQUIRED }
+  /vacation-requests/:id/events:
+    get:
+      summary: Audit trail of a request (domain events)
+      tags: [Vacation requests]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#listVacationRequestEventsHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#listVacationRequestEventsParser
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: 'Events in order: { items }' }
+        '404': { description: NOT_FOUND (also for another user's request) }
+  /team-calendar:
+    get:
+      summary: Approved and pending vacations of the whole team in a window (no reason or comments)
+      tags: [Team planning]
+      security: [{ bearerAuth: [] }]
+      x-handler: modules/vacation-requests/http/vacation-requests.http#getTeamCalendarHandler
+      x-inputParser: modules/vacation-requests/http/vacation-requests.http#getTeamCalendarParser
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - {
+            in: query,
+            name: to,
+            required: true,
+            schema: { type: string, format: date },
+            description: 'At most 92 days after from (inclusive)',
+          }
+      responses:
+        '200': { description: '{ items: [{ id, userId, userName, startDate, endDate, status }] }' }

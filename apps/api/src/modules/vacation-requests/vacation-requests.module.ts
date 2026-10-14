@@ -13,10 +13,23 @@ import {
   RejectVacationRequestCommand,
   RejectVacationRequestHandler,
 } from './application/commands/reject-vacation-request.command';
+import {
+  GetTeamCalendarHandler,
+  GetTeamCalendarQuery,
+  GetVacationRequestEventsHandler,
+  GetVacationRequestEventsQuery,
+  GetVacationRequestHandler,
+  GetVacationRequestQuery,
+  ListMyVacationRequestsHandler,
+  ListMyVacationRequestsQuery,
+  ListVacationRequestsHandler,
+  ListVacationRequestsQuery,
+} from './application/queries/vacation-request.queries';
+import { TypeOrmVacationRequestReadModel } from './infrastructure/typeorm-vacation-request-read-model';
 import { TypeOrmVacationRequestRepository } from './infrastructure/typeorm-vacation-request-repository';
 
 export function registerVacationRequestsModule(container: Container): void {
-  const { commandBus, unitOfWork, clock, dataSource } = container;
+  const { commandBus, queryBus, unitOfWork, clock, dataSource } = container;
   const requests = new TypeOrmVacationRequestRepository();
   const decider = new VacationRequestDecider(
     unitOfWork,
@@ -36,5 +49,27 @@ export function registerVacationRequestsModule(container: Container): void {
   commandBus.register<RejectVacationRequestCommand>(
     RejectVacationRequestCommand.type,
     new RejectVacationRequestHandler(decider),
+  );
+
+  const readModel = new TypeOrmVacationRequestReadModel(dataSource);
+  queryBus.register<GetVacationRequestQuery>(
+    GetVacationRequestQuery.type,
+    new GetVacationRequestHandler(readModel),
+  );
+  queryBus.register<ListMyVacationRequestsQuery>(
+    ListMyVacationRequestsQuery.type,
+    new ListMyVacationRequestsHandler(readModel),
+  );
+  queryBus.register<ListVacationRequestsQuery>(
+    ListVacationRequestsQuery.type,
+    new ListVacationRequestsHandler(readModel),
+  );
+  queryBus.register<GetTeamCalendarQuery>(
+    GetTeamCalendarQuery.type,
+    new GetTeamCalendarHandler(readModel),
+  );
+  queryBus.register<GetVacationRequestEventsQuery>(
+    GetVacationRequestEventsQuery.type,
+    new GetVacationRequestEventsHandler(readModel),
   );
 }

@@ -5,6 +5,7 @@ import { registerHandlerRefs } from "commoneventframework";
 import * as __cef_modules_auth_http_auth_http from "../modules/auth/http/auth.http";
 import * as __cef_modules_health_http_health_http from "../modules/health/http/health.http";
 import * as __cef_modules_users_http_users_http from "../modules/users/http/users.http";
+import * as __cef_modules_vacation_requests_http_vacation_requests_http from "../modules/vacation-requests/http/vacation-requests.http";
 
 export class HandlerRegistry {
 	static register(): void {
@@ -17,6 +18,20 @@ export class HandlerRegistry {
 			"modules/health/http/health.http#getHealthParser": __cef_modules_health_http_health_http.getHealthParser,
 			"modules/users/http/users.http#listUsersHandler": __cef_modules_users_http_users_http.listUsersHandler,
 			"modules/users/http/users.http#listUsersParser": __cef_modules_users_http_users_http.listUsersParser,
+			"modules/vacation-requests/http/vacation-requests.http#approveVacationRequestHandler": __cef_modules_vacation_requests_http_vacation_requests_http.approveVacationRequestHandler,
+			"modules/vacation-requests/http/vacation-requests.http#approveVacationRequestParser": __cef_modules_vacation_requests_http_vacation_requests_http.approveVacationRequestParser,
+			"modules/vacation-requests/http/vacation-requests.http#createVacationRequestHandler": __cef_modules_vacation_requests_http_vacation_requests_http.createVacationRequestHandler,
+			"modules/vacation-requests/http/vacation-requests.http#createVacationRequestParser": __cef_modules_vacation_requests_http_vacation_requests_http.createVacationRequestParser,
+			"modules/vacation-requests/http/vacation-requests.http#getTeamCalendarHandler": __cef_modules_vacation_requests_http_vacation_requests_http.getTeamCalendarHandler,
+			"modules/vacation-requests/http/vacation-requests.http#getTeamCalendarParser": __cef_modules_vacation_requests_http_vacation_requests_http.getTeamCalendarParser,
+			"modules/vacation-requests/http/vacation-requests.http#listMyVacationRequestsHandler": __cef_modules_vacation_requests_http_vacation_requests_http.listMyVacationRequestsHandler,
+			"modules/vacation-requests/http/vacation-requests.http#listMyVacationRequestsParser": __cef_modules_vacation_requests_http_vacation_requests_http.listMyVacationRequestsParser,
+			"modules/vacation-requests/http/vacation-requests.http#listVacationRequestEventsHandler": __cef_modules_vacation_requests_http_vacation_requests_http.listVacationRequestEventsHandler,
+			"modules/vacation-requests/http/vacation-requests.http#listVacationRequestEventsParser": __cef_modules_vacation_requests_http_vacation_requests_http.listVacationRequestEventsParser,
+			"modules/vacation-requests/http/vacation-requests.http#listVacationRequestsHandler": __cef_modules_vacation_requests_http_vacation_requests_http.listVacationRequestsHandler,
+			"modules/vacation-requests/http/vacation-requests.http#listVacationRequestsParser": __cef_modules_vacation_requests_http_vacation_requests_http.listVacationRequestsParser,
+			"modules/vacation-requests/http/vacation-requests.http#rejectVacationRequestHandler": __cef_modules_vacation_requests_http_vacation_requests_http.rejectVacationRequestHandler,
+			"modules/vacation-requests/http/vacation-requests.http#rejectVacationRequestParser": __cef_modules_vacation_requests_http_vacation_requests_http.rejectVacationRequestParser,
 		});
 	}
 }
