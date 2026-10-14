@@ -4,8 +4,13 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-/* Visible focus for keyboard users on every interactive element. */
 @layer base {
+  body {
+    background-color: var(--color-slate-50);
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Visible focus for keyboard users on every interactive element. */
   :focus-visible {
     outline: 2px solid var(--color-indigo-600);
     outline-offset: 2px;

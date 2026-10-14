@@ -1,25 +1,37 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { LoaderCircle } from 'lucide-vue-next';
+import { type Component, computed } from 'vue';
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
     type?: 'button' | 'submit';
     loading?: boolean;
     disabled?: boolean;
     size?: 'sm' | 'md';
+    /** Leading icon (decorative). */
+    icon?: Component;
   }>(),
-  { variant: 'primary', type: 'button', loading: false, disabled: false, size: 'md' },
+  {
+    variant: 'primary',
+    type: 'button',
+    loading: false,
+    disabled: false,
+    size: 'md',
+    icon: undefined,
+  },
 );
 
 const classes = computed(() => [
-  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium shadow-xs transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
   props.size === 'sm' ? 'min-h-9 px-3 text-sm' : 'min-h-11 px-4 text-sm',
   {
     primary: 'bg-indigo-600 text-white hover:bg-indigo-700',
-    secondary: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+    success: 'bg-emerald-600 text-white hover:bg-emerald-700',
+    secondary:
+      'border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50',
     danger: 'bg-rose-600 text-white hover:bg-rose-700',
-    ghost: 'text-slate-600 hover:bg-slate-100',
+    ghost: 'text-slate-600 shadow-none hover:bg-slate-100',
   }[props.variant],
 ]);
 </script>
@@ -31,16 +43,8 @@ const classes = computed(() => [
     :disabled="disabled || loading"
     :aria-busy="loading || undefined"
   >
-    <svg
-      v-if="loading"
-      class="size-4 animate-spin"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25" />
-      <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="4" />
-    </svg>
+    <LoaderCircle v-if="loading" class="size-4 animate-spin" aria-hidden="true" />
+    <component :is="icon" v-else-if="icon" class="size-4" aria-hidden="true" />
     <slot />
   </button>
 </template>
