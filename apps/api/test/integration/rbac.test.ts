@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { closeDataSource } from '../../src/shared/infrastructure/database/data-source';
+import { closeDataSource } from '../../src/shared/database/data-source';
 import { call, createUser, requestRow, submit, type TestUser, useFixedClock } from '../support/api';
 
 /** Epic §14 permissions matrix, endpoint by endpoint (checklist §13). */

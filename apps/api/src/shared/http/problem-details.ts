@@ -1,6 +1,6 @@
 import { ERROR_HTTP_STATUS, type ErrorCode, type ProblemDetails } from '@leaveflow/contracts';
 import { ZodError } from 'zod';
-import { ApplicationError } from '../domain/errors';
+import { ApplicationError } from '../errors/application-errors';
 import { zodIssuesToFieldErrors } from './request';
 
 const TITLES: Partial<Record<ErrorCode, string>> = {

@@ -1,8 +1,8 @@
 import type { UserRole } from '@leaveflow/contracts';
 import type { CommonEvent } from 'commoneventframework/dist/types/commonEvent';
 import { type Container, getContainer } from '../../bootstrap/container';
-import type { Principal } from '../application/principal';
-import { ForbiddenError, UnauthenticatedError } from '../domain/errors';
+import type { Principal } from '../security/principal';
+import { ForbiddenError, UnauthenticatedError } from '../errors/application-errors';
 import { HttpResponse } from './http-response';
 import { requestContext } from './request-context';
 import { EndpointRequest } from './request';

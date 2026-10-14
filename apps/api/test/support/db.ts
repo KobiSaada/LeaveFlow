@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { UserRole } from '@leaveflow/contracts';
 import type { DataSource } from 'typeorm';
-import { getDataSource } from '../../src/shared/infrastructure/database/data-source';
+import { getDataSource } from '../../src/shared/database/data-source';
 
 export function testDataSource(): Promise<DataSource> {
   const url = process.env.TEST_DATABASE_URL;

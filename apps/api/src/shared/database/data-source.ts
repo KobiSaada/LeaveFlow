@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { types as pgTypes } from 'pg';
 import { DataSource } from 'typeorm';
-import { InitialSchema1760432400000 } from '../../../migrations/1760432400000-InitialSchema';
-import { UserEntity } from '../../../modules/users/infrastructure/user.entity';
-import { VacationRequestEntity } from '../../../modules/vacation-requests/infrastructure/vacation-request.entity';
-import { DomainEventEntity } from '../events/domain-event.entity';
+import { InitialSchema1760432400000 } from '../../migrations/1760432400000-InitialSchema';
+import { UserEntity } from '../../modules/users/infrastructure/user.entity';
+import { VacationRequestEntity } from '../../modules/vacation-requests/infrastructure/vacation-request.entity';
+import { DomainEventEntity } from './domain-event.entity';
 
 // Return DATE columns exactly as stored ('YYYY-MM-DD'). The pg default builds a JS Date at local
 // midnight, which shifts the calendar day whenever a raw query result is serialised as UTC.

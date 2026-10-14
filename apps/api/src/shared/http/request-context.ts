@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import type { Principal } from '../application/principal';
+import type { Principal } from '../security/principal';
 
 export interface RequestContext {
   requestId: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { UnauthenticatedError } from '../../../shared/domain/errors';
+import { UnauthenticatedError } from '../../../shared/errors/application-errors';
 import type { UserCredentials, UserRepository } from '../../users/application/user-repository';
 import { AuthService, InvalidCredentialsError } from './auth.service';
 import type { PasswordHasher } from './password-hasher';

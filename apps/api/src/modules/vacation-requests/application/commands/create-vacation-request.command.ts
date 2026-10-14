@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { IsoDate } from '@leaveflow/contracts';
-import { Command, type CommandHandler } from '../../../../shared/application/bus';
-import type { Clock } from '../../../../shared/application/clock';
-import type { Principal } from '../../../../shared/application/principal';
-import type { Transaction, UnitOfWork } from '../../../../shared/application/unit-of-work';
-import { ForbiddenError } from '../../../../shared/domain/errors';
+import { Command, type CommandHandler } from '../../../../shared/cqrs/command-bus';
+import type { Clock } from '../../../../shared/time/clock';
+import type { Principal } from '../../../../shared/security/principal';
+import type { Transaction, UnitOfWork } from '../../../../shared/cqrs/unit-of-work';
+import { ForbiddenError } from '../../../../shared/errors/application-errors';
 import { DateRange } from '../../domain/date-range';
 import { VacationRequest } from '../../domain/vacation-request';
 import {

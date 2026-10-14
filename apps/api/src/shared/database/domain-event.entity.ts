@@ -1,5 +1,5 @@
 import { Column, Entity, Generated, PrimaryColumn } from 'typeorm';
-import type { EventPayload } from '../../domain/domain-event';
+import type { EventPayload } from '../domain/domain-event';
 
 /** Insert-only record of every domain event (outbox-lite + audit trail). */
 @Entity({ name: 'domain_events' })

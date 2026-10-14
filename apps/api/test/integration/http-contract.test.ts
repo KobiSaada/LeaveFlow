@@ -1,8 +1,8 @@
 import { Writable } from 'node:stream';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { getContainer } from '../../src/bootstrap/container';
-import { closeDataSource } from '../../src/shared/infrastructure/database/data-source';
-import { createLogger, setRootLogger } from '../../src/shared/infrastructure/logger';
+import { closeDataSource } from '../../src/shared/database/data-source';
+import { createLogger, setRootLogger } from '../../src/shared/logging/logger';
 import {
   call,
   createUser,

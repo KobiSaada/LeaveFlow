@@ -1,6 +1,6 @@
 import type { CommonEvent } from 'commoneventframework/dist/types/commonEvent';
 import { describe, expect, it } from 'vitest';
-import { MalformedJsonError } from '../domain/errors';
+import { MalformedJsonError } from '../errors/application-errors';
 import { EndpointRequest } from './request';
 
 const make = (overrides: Partial<CommonEvent>): EndpointRequest =>

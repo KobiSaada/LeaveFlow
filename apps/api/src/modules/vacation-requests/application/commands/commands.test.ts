@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Principal } from '../../../../shared/application/principal';
-import type { Transaction, UnitOfWork } from '../../../../shared/application/unit-of-work';
+import type { Principal } from '../../../../shared/security/principal';
+import type { Transaction, UnitOfWork } from '../../../../shared/cqrs/unit-of-work';
 import type { DomainEvent } from '../../../../shared/domain/domain-event';
-import { ForbiddenError } from '../../../../shared/domain/errors';
-import { FixedClock } from '../../../../shared/infrastructure/clock';
+import { ForbiddenError } from '../../../../shared/errors/application-errors';
+import { FixedClock } from '../../../../shared/time/clock';
 import type { UserRepository } from '../../../users/application/user-repository';
 import type { DateRange } from '../../domain/date-range';
 import { VacationRequest } from '../../domain/vacation-request';

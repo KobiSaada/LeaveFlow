@@ -1,7 +1,7 @@
 import type { FieldError } from '@leaveflow/contracts';
 import type { CommonEvent } from 'commoneventframework/dist/types/commonEvent';
 import type { ZodError, ZodType, ZodTypeDef } from 'zod';
-import { MalformedJsonError, ValidationFailedError } from '../domain/errors';
+import { MalformedJsonError, ValidationFailedError } from '../errors/application-errors';
 
 type Location = 'body' | 'query' | 'path' | 'header';
 

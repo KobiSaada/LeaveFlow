@@ -1,5 +1,5 @@
 import type { IsoDate, UserRef, VacationRequestStatus } from '@leaveflow/contracts';
-import { ApplicationError, NotFoundError } from '../../../shared/domain/errors';
+import { ApplicationError, NotFoundError } from '../../../shared/errors/application-errors';
 
 export class InvalidDateRangeError extends ApplicationError {
   readonly code = 'INVALID_DATE_RANGE';

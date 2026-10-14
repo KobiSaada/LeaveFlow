@@ -8,7 +8,7 @@ import {
   type VacationRequestStatus,
 } from '@leaveflow/contracts';
 import type { DataSource, SelectQueryBuilder } from 'typeorm';
-import { DomainEventEntity } from '../../../shared/infrastructure/events/domain-event.entity';
+import { DomainEventEntity } from '../../../shared/database/domain-event.entity';
 import { UserEntity } from '../../users/infrastructure/user.entity';
 import type {
   VacationRequestListFilter,

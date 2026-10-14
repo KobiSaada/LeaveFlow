@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Command, CommandBus, type Middleware } from './bus';
+import { Command, CommandBus, type Middleware } from './command-bus';
 
 class Double extends Command<number> {
   static readonly type = 'Double';

@@ -1,11 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import {
-  asConstraintViolation,
-  PG_ERROR,
-} from '../../src/shared/infrastructure/database/pg-errors';
-import { closeDataSource } from '../../src/shared/infrastructure/database/data-source';
+import { asConstraintViolation, PG_ERROR } from '../../src/shared/database/pg-errors';
+import { closeDataSource } from '../../src/shared/database/data-source';
 import { insertUserRow, testDataSource } from '../support/db';
 
 /**

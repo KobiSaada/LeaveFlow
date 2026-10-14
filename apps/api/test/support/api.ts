@@ -5,7 +5,7 @@ import type { Context } from 'commoneventframework';
 import type { CommonEvent } from 'commoneventframework/dist/types/commonEvent';
 import { configureContainer, getContainer } from '../../src/bootstrap/container';
 import { handler } from '../../src/index';
-import { FixedClock } from '../../src/shared/infrastructure/clock';
+import { FixedClock } from '../../src/shared/time/clock';
 import { insertUserRow, testDataSource } from './db';
 
 /** "Today" for every integration test, so date rules are deterministic. */

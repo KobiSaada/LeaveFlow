@@ -5,7 +5,7 @@ import type {
   VacationRequestDto,
   VacationRequestEventDto,
 } from '@leaveflow/contracts';
-import type { Principal } from '../../../shared/application/principal';
+import type { Principal } from '../../../shared/security/principal';
 import { VacationRequestNotFoundError } from '../domain/vacation-request.errors';
 import type {
   VacationRequestListFilter,

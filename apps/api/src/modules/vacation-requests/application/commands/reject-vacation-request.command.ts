@@ -1,5 +1,5 @@
-import { Command, type CommandHandler } from '../../../../shared/application/bus';
-import type { Principal } from '../../../../shared/application/principal';
+import { Command, type CommandHandler } from '../../../../shared/cqrs/command-bus';
+import type { Principal } from '../../../../shared/security/principal';
 import type { DecisionResult, VacationRequestDecider } from './decide-vacation-request';
 
 export class RejectVacationRequestCommand extends Command<DecisionResult> {

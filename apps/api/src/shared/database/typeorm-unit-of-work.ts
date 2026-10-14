@@ -1,8 +1,8 @@
 import type { DataSource, EntityManager } from 'typeorm';
-import type { EventBus } from '../../application/event-bus';
-import type { Transaction, UnitOfWork } from '../../application/unit-of-work';
-import type { DomainEvent } from '../../domain/domain-event';
-import { DomainEventEntity } from '../events/domain-event.entity';
+import type { EventBus } from '../cqrs/event-bus';
+import type { Transaction, UnitOfWork } from '../cqrs/unit-of-work';
+import type { DomainEvent } from '../domain/domain-event';
+import { DomainEventEntity } from './domain-event.entity';
 
 export class TypeOrmTransaction implements Transaction {
   readonly events: DomainEvent[] = [];

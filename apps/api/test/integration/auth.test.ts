@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { closeDataSource } from '../../src/shared/infrastructure/database/data-source';
+import { closeDataSource } from '../../src/shared/database/data-source';
 import { call, createUser, TEST_PASSWORD, type TestUser, useFixedClock } from '../support/api';
 
 let alice: TestUser;

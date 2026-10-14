@@ -1,5 +1,5 @@
 import { config as loadDotenv } from 'dotenv';
-import { createDataSource } from '../../src/shared/infrastructure/database/data-source';
+import { createDataSource } from '../../src/shared/database/data-source';
 
 /** Rebuilds the test database from migrations once per integration run. */
 export default async function globalSetup(): Promise<void> {

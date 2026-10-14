@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { closeDataSource } from '../../src/shared/infrastructure/database/data-source';
+import { closeDataSource } from '../../src/shared/database/data-source';
 import { insertUserRow, testDataSource } from '../support/db';
 import { call, createUser, submit, type TestUser, useFixedClock } from '../support/api';
 

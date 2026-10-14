@@ -1,7 +1,7 @@
-import type { Clock } from '../../../../shared/application/clock';
-import type { Principal } from '../../../../shared/application/principal';
-import type { UnitOfWork } from '../../../../shared/application/unit-of-work';
-import { ForbiddenError } from '../../../../shared/domain/errors';
+import type { Clock } from '../../../../shared/time/clock';
+import type { Principal } from '../../../../shared/security/principal';
+import type { UnitOfWork } from '../../../../shared/cqrs/unit-of-work';
+import { ForbiddenError } from '../../../../shared/errors/application-errors';
 import type { UserRepository } from '../../../users/application/user-repository';
 import type { Decision } from '../../domain/vacation-request';
 import {

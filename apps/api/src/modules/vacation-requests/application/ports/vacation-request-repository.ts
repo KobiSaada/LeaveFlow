@@ -1,4 +1,4 @@
-import type { Transaction } from '../../../../shared/application/unit-of-work';
+import type { Transaction } from '../../../../shared/cqrs/unit-of-work';
 import type { DateRange } from '../../domain/date-range';
 import type { VacationRequest } from '../../domain/vacation-request';
 

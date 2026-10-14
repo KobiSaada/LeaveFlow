@@ -1,5 +1,5 @@
-import type { EventBus } from '../../shared/application/event-bus';
-import { logger } from '../../shared/infrastructure/logger';
+import type { EventBus } from '../../shared/cqrs/event-bus';
+import { logger } from '../../shared/logging/logger';
 import type {
   VacationRequestApproved,
   VacationRequestCreated,

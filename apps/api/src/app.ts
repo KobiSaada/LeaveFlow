@@ -9,11 +9,11 @@ import {
   setLambdaContext,
 } from 'commoneventframework';
 import type { CommonEvent, LambdaEvent } from 'commoneventframework/dist/types/commonEvent';
-import { RouteNotFoundError } from './shared/domain/errors';
+import { RouteNotFoundError } from './shared/errors/application-errors';
 import { HttpResponse } from './shared/http/http-response';
 import { toProblem } from './shared/http/problem-details';
 import { type RequestContext, requestContext } from './shared/http/request-context';
-import { logger } from './shared/infrastructure/logger';
+import { logger } from './shared/logging/logger';
 
 type LambdaResult = APIGatewayProxyStructuredResultV2;
 type RouteFn = (...args: unknown[]) => unknown;

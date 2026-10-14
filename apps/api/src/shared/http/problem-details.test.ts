@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { ForbiddenError, MalformedJsonError, ValidationFailedError } from '../domain/errors';
+import {
+  ForbiddenError,
+  MalformedJsonError,
+  ValidationFailedError,
+} from '../errors/application-errors';
 import { toProblem } from './problem-details';
 
 describe('toProblem', () => {

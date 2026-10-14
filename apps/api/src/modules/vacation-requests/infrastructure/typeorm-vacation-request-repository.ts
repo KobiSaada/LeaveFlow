@@ -1,8 +1,8 @@
 import { ACTIVE_VACATION_REQUEST_STATUSES } from '@leaveflow/contracts';
 import type { EntityManager } from 'typeorm';
-import type { Transaction } from '../../../shared/application/unit-of-work';
-import { asConstraintViolation, PG_ERROR } from '../../../shared/infrastructure/database/pg-errors';
-import { entityManagerOf } from '../../../shared/infrastructure/database/typeorm-unit-of-work';
+import type { Transaction } from '../../../shared/cqrs/unit-of-work';
+import { asConstraintViolation, PG_ERROR } from '../../../shared/database/pg-errors';
+import { entityManagerOf } from '../../../shared/database/typeorm-unit-of-work';
 import type { VacationRequestRepository } from '../application/ports/vacation-request-repository';
 import { DateRange } from '../domain/date-range';
 import { VacationRequest } from '../domain/vacation-request';

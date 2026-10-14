@@ -3,7 +3,7 @@
  * Usage: tsx scripts/migrate.ts up|down   (TEST=1 targets TEST_DATABASE_URL)
  */
 import 'dotenv/config';
-import { createDataSource } from '../src/shared/infrastructure/database/data-source';
+import { createDataSource } from '../src/shared/database/data-source';
 
 async function main(): Promise<void> {
   const direction = process.argv[2] ?? 'up';

@@ -1,5 +1,11 @@
 import { type IsoDate, isoDateInTimeZone } from '@leaveflow/contracts';
-import type { Clock } from '../application/clock';
+
+/** Time source. Injected so business rules ("no past dates") are testable and timezone-explicit. */
+export interface Clock {
+  now(): Date;
+  /** Today's calendar date in the business time zone. */
+  today(): IsoDate;
+}
 
 export class SystemClock implements Clock {
   constructor(private readonly timeZone: string) {}

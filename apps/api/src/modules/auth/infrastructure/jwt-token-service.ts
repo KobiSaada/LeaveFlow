@@ -1,8 +1,8 @@
 import { USER_ROLES } from '@leaveflow/contracts';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import type { Principal, TokenIssuer, TokenVerifier } from '../../../shared/application/principal';
-import { UnauthenticatedError } from '../../../shared/domain/errors';
+import type { Principal, TokenIssuer, TokenVerifier } from '../../../shared/security/principal';
+import { UnauthenticatedError } from '../../../shared/errors/application-errors';
 
 export interface JwtSettings {
   secret: string;
