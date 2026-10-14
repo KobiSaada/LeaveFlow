@@ -10,6 +10,8 @@ All work follows spec-driven development via the `spec-development` skill (`.cla
 ## Conventions
 
 - npm workspaces: `apps/api` (CommonJS, CEF), `apps/web` (ESM, Vite), `packages/contracts` (shared types/schemas — change contracts first).
+- Structure (keep it uniform): API modules = `<feature>.module.ts`, `controllers/`, `services/`, `commands/` (`*.command.ts` + `*.handler.ts`), `domain/`, `repositories/` (interface + `typeorm-*`), `entities/`, `subscribers/`; `shared/` by concern. Web features = `features/<feature>/{<feature>.api.ts, <feature>.store.ts, <feature>.routes.ts, views/, components/}`; cross-feature code in `shared/`. Views call their feature store only.
+- Feature behaviour is documented in `docs/features/F-NN-*.md`; update the matching spec (and `docs/requirements-compliance.md`) when behaviour changes.
 - Node via `.nvmrc` (24). PostgreSQL via `npm run db:up` on host port 5544.
 - API routes live in `apps/api/src/root.yaml`; after editing run `npm run codegen -w @leaveflow/api` (never the `cef-gen-handlers` bin — it is a no-op via npm in CEF 1.0.19).
 - Layering: controller (`modules/*/controllers`, built with `endpoint()`: auth → role → validation in the input parser) → command handler on the `CommandBus` for writes (runs in the UnitOfWork, records events) or a read service (`container.services.*`) for reads → repository / read model. No query bus.

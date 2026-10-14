@@ -15,6 +15,8 @@ Built for the TravelFactory home assignment with **Vue 3**, **Node.js on [`commo
 - [Known limitations](#known-limitations)
 - [How this was built](#how-this-was-built)
 
+**Docs:** [feature specs](docs/features/README.md) · [requirements compliance](docs/requirements-compliance.md) · [change history (SDD specs)](docs/specs)
+
 ---
 
 ## Quick start
@@ -99,57 +101,68 @@ flowchart LR
     UoW --> EB
 ```
 
-### Layers and modules
+### Project structure
+
+Every backend module uses the **same layout** (only the folders it needs), and the frontend is organised **by feature**.
 
 ```
 apps/api/src/
-  index.ts, app.ts          CEF entry: loadEnv, generated registry, never-throwing handler
-  root.yaml                 OpenAPI 3.0 + x-handler / x-inputParser — the routing source of truth
-  generated/                HandlerRegistry.ts (generated, committed, drift-checked)
-  bootstrap/                env config (validated, fail fast) · composition root (manual DI)
-  shared/
-    domain/                 ApplicationError hierarchy · AggregateRoot · DomainEvent
-    application/            CommandBus (+ middleware) · EventBus · UnitOfWork · Clock ports
-    http/                   endpoint() · Problem Details mapping · request parsing · request context
-    infrastructure/         DataSource · unit of work · PG error translation · pino logger · clocks
-  modules/
-    auth/                   AuthService (login, me), JWT, bcrypt
-    users/                  UsersService
-    vacation-requests/
-      domain/               VacationRequest aggregate, DateRange, events, errors   ← no framework imports
-      application/          commands/ (write side), vacation-request-queries.ts (read service), ports/
-      infrastructure/       TypeORM entity, repository (writes), read model (reads)
-      controllers/          endpoints referenced from root.yaml
-    notifications/          event subscribers
+  index.ts · app.ts           CEF entry: loadEnv, generated registry, never-throwing handler
+  root.yaml                   OpenAPI 3.0 + x-handler / x-inputParser — the routing source of truth
+  generated/                  HandlerRegistry.ts (generated, committed, drift-checked)
+  bootstrap/                  config.ts (validated env) · container.ts (composition root) · modules.ts
   migrations/
-packages/contracts/         enums, DTO types, zod schemas, error codes — shared by API and web
-apps/web/src/               api/ · stores/ · router/ · composables/ · components/ · views/
+  shared/                     grouped by concern
+    cqrs/                     CommandBus (+ middleware) · EventBus · UnitOfWork port
+    domain/                   AggregateRoot · DomainEvent
+    errors/                   ApplicationError hierarchy
+    http/                     endpoint() · request parsing · Problem Details · request context
+    database/                 DataSource · TypeORM unit of work · PG error translation · domain_events entity
+    security/                 Principal · TokenIssuer / TokenVerifier ports
+    time/                     Clock (System / Fixed)
+    logging/                  pino logger with redaction
+  modules/<feature>/          same layout in every module
+    <feature>.module.ts       wiring ("providers")
+    controllers/              routes from root.yaml
+    services/                 use-case services (reads, auth)
+    commands/                 <name>.command.ts + <name>.handler.ts (writes)
+    domain/                   model: aggregate, value objects, events, errors — no framework imports
+    repositories/             interface + typeorm-<name>.repository.ts
+    entities/                 TypeORM entities
+    subscribers/              event subscribers
+packages/contracts/src/       enums, DTO types, zod schemas, error codes — shared by API and web
+apps/web/src/
+  main.ts · App.vue · router.ts (composes feature routes + guards)
+  shared/                     api/http.ts (Axios) · components/ (AppShell, ui/*) · composables/ · utils/ · views/
+  features/<feature>/         <feature>.api.ts · <feature>.store.ts (Pinia) · <feature>.routes.ts · views/ · components/
+                              auth · my-requests · approvals · team-planning · vacation-requests (shared bits)
 ```
 
-Dependencies point inward: `domain` ← `application` ← `infrastructure` / `controllers`.
+Modules: `auth`, `users`, `vacation-requests`, `notifications`, `health`. Dependencies point inward: `domain` ← `commands`/`services` ← `repositories`/`controllers`.
 
 ### The same layers in familiar terms
 
-| Familiar term    | Here                                                                                    | Example                                    |
-| ---------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Module           | `modules/<feature>/` + `<feature>.module.ts` (wires the feature, like NestJS providers) | `vacation-requests.module.ts`              |
-| Controller       | `controllers/*.controller.ts` — the functions `root.yaml` routes to                     | `vacation-requests.controller.ts`          |
-| Service (reads)  | `*Service` / `*Queries` classes                                                         | `VacationRequestQueries`, `AuthService`    |
-| Service (writes) | one command handler per use case, dispatched on the `CommandBus`                        | `CreateVacationRequestHandler`             |
-| Repository       | `infrastructure/*-repository.ts` (writes) and `*-read-model.ts` (reads)                 | `TypeOrmVacationRequestRepository`         |
-| Entity / model   | TypeORM entity (persistence) + domain aggregate (rules)                                 | `VacationRequestEntity`, `VacationRequest` |
+| Familiar term    | Here                                                                                        | Example                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Module           | `modules/<feature>/<feature>.module.ts` (wires the feature, like NestJS providers)          | `vacation-requests.module.ts`                                              |
+| Controller       | `controllers/<feature>.controller.ts` — the functions `root.yaml` routes to                 | `vacation-requests.controller.ts`                                          |
+| Service (reads)  | `services/<feature>.service.ts`                                                             | `VacationRequestsService`, `AuthService`, `UsersService`                   |
+| Command (writes) | `commands/<name>.command.ts` (message) + `<name>.handler.ts` (use case) on the `CommandBus` | `CreateVacationRequestCommand` → `CreateVacationRequestHandler`            |
+| Repository       | `repositories/<name>.repository.ts` (interface) + `typeorm-<name>.repository.ts`            | `TypeOrmVacationRequestRepository`, `TypeOrmVacationRequestReadRepository` |
+| Entity / model   | `entities/*.entity.ts` (persistence) + `domain/` aggregate (rules)                          | `VacationRequestEntity`, `VacationRequest`                                 |
+| Frontend store   | one Pinia store per feature owning server state and actions; views stay thin                | `useApprovalsStore`, `useMyRequestsStore`                                  |
 
 **Why commands for writes but plain services for reads:** the brief asks for commands and events for state changes (`CreateVacationRequestCommand`, "vacation approved" events), and that is where a bus, a unit of work and events pay off — one transaction, one audited event per change. Reads change nothing, so they are ordinary service methods.
 
 ### Commands, read services, events
 
-| Kind         | Name                                                                                                                 | Notes                                                                    |
-| ------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Command      | `CreateVacationRequestCommand`                                                                                       | returns `{ id, created }`; the DTO is read back through the read service |
-| Command      | `ApproveVacationRequestCommand`                                                                                      | compare-and-set; repeat = no-op                                          |
-| Command      | `RejectVacationRequestCommand`                                                                                       | comment required                                                         |
-| Read service | `VacationRequestQueries` (`getById`, `listMine`, `listAll`, `teamCalendar`, `events`), `AuthService`, `UsersService` | no bus — reads change nothing                                            |
-| Event        | `VacationRequestCreated`, `VacationRequestApproved`, `VacationRequestRejected`                                       | ids and dates only — never free text                                     |
+| Kind         | Name                                                                                                                  | Notes                                                                    |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Command      | `CreateVacationRequestCommand`                                                                                        | returns `{ id, created }`; the DTO is read back through the read service |
+| Command      | `ApproveVacationRequestCommand`                                                                                       | compare-and-set; repeat = no-op                                          |
+| Command      | `RejectVacationRequestCommand`                                                                                        | comment required                                                         |
+| Read service | `VacationRequestsService` (`getById`, `listMine`, `listAll`, `teamCalendar`, `events`), `AuthService`, `UsersService` | no bus — reads change nothing                                            |
+| Event        | `VacationRequestCreated`, `VacationRequestApproved`, `VacationRequestRejected`                                        | ids and dates only — never free text                                     |
 
 **Event delivery (outbox-lite):** events are inserted into `domain_events` **in the same transaction** as the state change, then published to in-process subscribers **only after commit**. A rolled-back change leaves no event; a committed change always has one; a failing subscriber is logged and never fails the request. `domain_events` doubles as the audit trail shown in the UI ("History").
 
@@ -271,7 +284,7 @@ Lists return `{ items, pageInfo: { page, pageSize, totalItems, totalPages } }`.
 ## Testing
 
 ```bash
-npm run db:up && npm test      # 196 tests
+npm run db:up && npm test      # 207 tests
 ```
 
 | Suite                | Count | What it proves                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -279,7 +292,7 @@ npm run db:up && npm test      # 196 tests
 | `packages/contracts` | 27    | calendar-date validation (rejects `2026-02-30`), schemas, pagination caps, date arithmetic                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | API unit             | 56    | `DateRange`, aggregate rules and events, command handlers incl. lost-race paths (in-memory fakes), buses, JWT edge cases (expired, foreign secret, `alg: none`), error mapping                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | API integration      | 93    | the **real CEF handler** against **real PostgreSQL**, asserting stored rows and events, not just responses — RBAC matrix for every endpoint, IDOR, every business rule, overlap matrix, idempotency, **10-way submission races and approve-vs-reject races (repeated)**, stable pagination on tied timestamps, team-calendar projection, query plans use the intended indexes, every DB constraint by direct SQL, migration down/up, Problem Details contract, `500` hides internals and the process keeps serving, events only after commit, log redaction, dates under foreign process time zones |
-| Web                  | 20    | decision dialog (comment rules, a11y, Esc), pagination, status badge, error mapper, date display under several time zones                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Web                  | 31    | feature stores (loading, stale responses, decision outcomes, idempotency key), decision dialog, pagination, status badge, error mapper, date display under several time zones                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 The UI was also walked end to end in a browser as both roles (including a two-validator race and a 390 px viewport).
 

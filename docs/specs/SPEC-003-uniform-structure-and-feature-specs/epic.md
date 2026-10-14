@@ -6,7 +6,7 @@
 |---|---|
 | Spec ID | SPEC-003 |
 | Title | Uniform project structure, feature-based frontend state, feature specs and requirements compliance |
-| Status | `approved` |
+| Status | `done` |
 | Brownfield | no — the code was written in SPEC-001/002 and is held in context |
 | Version | 0.1 |
 | Owner | Kobi Saada |
