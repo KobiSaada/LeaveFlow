@@ -7,7 +7,7 @@
 | ID | SPEC-004 |
 | Title | UI polish: icons, layout and visual hierarchy |
 | Track | small-spec |
-| Status | approved |
+| Status | `done` |
 | Compliance critical | `false` |
 | Created | 2026-10-14 |
 | Owner | Kobi Saada |

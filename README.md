@@ -4,6 +4,7 @@ Employees (**requesters**) submit vacation requests; managers (**validators**) r
 
 Built for the TravelFactory home assignment with **Vue 3**, **Node.js on [`commoneventframework`](https://www.npmjs.com/package/commoneventframework)**, **PostgreSQL + TypeORM** and **Tailwind CSS**, as a modular monolith with an explicit **command / query / event** architecture.
 
+- [Screenshots](#screenshots)
 - [Quick start](#quick-start)
 - [What you can do](#what-you-can-do)
 - [Architecture](#architecture)
@@ -16,6 +17,18 @@ Built for the TravelFactory home assignment with **Vue 3**, **Node.js on [`commo
 - [How this was built](#how-this-was-built)
 
 **Docs:** [feature specs](docs/features/README.md) · [requirements compliance](docs/requirements-compliance.md) · [change history (SDD specs)](docs/specs)
+
+## Screenshots
+
+| Sign in                                                 | Validator dashboard                                               |
+| ------------------------------------------------------- | ----------------------------------------------------------------- |
+| ![Sign in](docs/screenshots/01-login.jpg)               | ![Validator dashboard](docs/screenshots/06-dashboard-pending.jpg) |
+| **Reject with a required comment**                      | **All requests with decisions**                                   |
+| ![Reject dialog](docs/screenshots/07-reject-dialog.jpg) | ![Dashboard, all statuses](docs/screenshots/05-dashboard-all.jpg) |
+| **My requests**                                         | **New request**                                                   |
+| ![My requests](docs/screenshots/02-my-requests.jpg)     | ![New request](docs/screenshots/03-new-request.jpg)               |
+| **Team planning**                                       | **Phone (390 px)**                                                |
+| ![Team planning](docs/screenshots/04-team-planning.jpg) | ![Mobile](docs/screenshots/08-mobile.jpg)                         |
 
 ---
 
